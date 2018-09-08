@@ -17,7 +17,7 @@ public interface DataManager {
 
     LiveData<MoviesResponse> getPopularMovies(int page);
 
-    Response<MoviesResponse> getTopRatedMovies(int page);
+    LiveData<MoviesResponse> getTopRatedMovies(int page);
 
     String getSortCriteria();
 

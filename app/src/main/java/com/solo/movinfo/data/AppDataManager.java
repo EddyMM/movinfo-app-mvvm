@@ -10,8 +10,6 @@ import com.solo.movinfo.data.network.MovieDbService;
 import com.solo.movinfo.data.network.models.MoviesResponse;
 import com.solo.movinfo.data.preferences.PreferencesHelper;
 
-import java.io.IOException;
-
 import javax.inject.Inject;
 
 import retrofit2.Call;
@@ -67,16 +65,31 @@ public class AppDataManager implements DataManager {
     }
 
     @Override
-    public Response<MoviesResponse> getTopRatedMovies(int page) {
-        MovieDbService movieDbService = MovieDbApi.getInstance(page);
+    public LiveData<MoviesResponse> getTopRatedMovies(int page) {
+        Timber.d("Making an API call for top rated movies");
 
+        final MutableLiveData<MoviesResponse> moviesResponseMutableLiveData =
+                new MutableLiveData<>();
+
+        MovieDbService movieDbService = MovieDbApi.getInstance(page);
         Call<MoviesResponse> topRatedMoviesCall = movieDbService.getTopRatedMovies();
-        try {
-            return topRatedMoviesCall.execute();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+
+        topRatedMoviesCall.enqueue(new Callback<MoviesResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<MoviesResponse> call,
+                    @NonNull Response<MoviesResponse> response) {
+                Timber.d("Received movies: %s", response.body());
+                moviesResponseMutableLiveData.setValue(response.body());
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<MoviesResponse> call, @NonNull Throwable t) {
+                Timber.e(t);
+                moviesResponseMutableLiveData.setValue(null);
+            }
+        });
+
+        return moviesResponseMutableLiveData;
     }
 
     @Override

@@ -1,10 +1,9 @@
 package com.solo.movinfo.di.module;
 
-import static com.solo.movinfo.utils.Constants.SHARED_PREFERENCES_NAME;
-
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 import com.solo.movinfo.MovinfoApplication;
 import com.solo.movinfo.data.AppDataManager;
@@ -42,7 +41,7 @@ public class ApplicationModule {
     @Provides
     @Singleton
     SharedPreferences provideSharedPreferences() {
-        return mApplication.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
+        return PreferenceManager.getDefaultSharedPreferences(mApplication);
     }
 
     @Provides

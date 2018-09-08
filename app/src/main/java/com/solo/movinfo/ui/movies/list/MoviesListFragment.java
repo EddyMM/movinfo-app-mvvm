@@ -33,8 +33,7 @@ import timber.log.Timber;
  * Fragment to host and manage movies list
  */
 
-public class MoviesListFragment extends Fragment implements
-        SharedPreferences.OnSharedPreferenceChangeListener {
+public class MoviesListFragment extends Fragment {
     @Inject
     DataManager mDataManager;
 
@@ -42,6 +41,8 @@ public class MoviesListFragment extends Fragment implements
     private MoviesListAdapter mMoviesListAdapter;
     private GridLayoutManager mMoviesListGridLayout;
     private Snackbar mInternetConnectionSnackbar;
+    private MoviesListViewModel moviesListViewModel;
+
     private boolean isLoading;
     private boolean retryAttempted;
 
@@ -72,12 +73,12 @@ public class MoviesListFragment extends Fragment implements
     }
 
     private void setupViewModel() {
-        MoviesListViewModel moviesListViewModel = ViewModelProviders.of(this).get(
+        moviesListViewModel = ViewModelProviders.of(this).get(
                 MoviesListViewModel.class);
 
         showProgressBar();
 
-        moviesListViewModel.movies.observe(this, moviesResponse -> {
+        moviesListViewModel.moviesResponseMediatorLiveData.observe(this, moviesResponse -> {
             if (moviesResponse != null) {
                 mMoviesListAdapter.addMovies(moviesResponse.getResults());
             } else {
@@ -109,7 +110,7 @@ public class MoviesListFragment extends Fragment implements
         SharedPreferences sharedPreferences = PreferenceManager.
                 getDefaultSharedPreferences(requireContext());
 
-        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(moviesListViewModel);
     }
 
     private void initUI(View view) {
@@ -178,12 +179,12 @@ public class MoviesListFragment extends Fragment implements
         isLoading = isLoadingMovies;
     }
 
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals(getString(R.string.sort_order_key))) {
-            fetchNextPageOfMovies();
-        }
-    }
+//    @Override
+//    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+//        if (key.equals(getString(R.string.sort_order_key))) {
+//            fetchNextPageOfMovies();
+//        }
+//    }
 
     public void openSettings() {
         Intent settingsIntent = new Intent(requireActivity(), SettingsActivity.class);
@@ -199,10 +200,10 @@ public class MoviesListFragment extends Fragment implements
                 this.requireContext());
 
         // Go ahead and fetch movies after reading preferred sort criteria
-        fetchNextPageOfMovies();
+        // fetchNextPageOfMovies();
 
         // Register as a listener for any changes in preferences
-        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(moviesListViewModel);
     }
 
     /**

@@ -65,7 +65,7 @@ public class MoviesListAdapter extends
     }
 
     public void addMovies(List<Movie> movies) {
-        mMovies.addAll(movies);
+        mMovies = movies;
         notifyDataSetChanged();
     }
 

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.solo.movinfo.R;
+import com.solo.movinfo.ui.movies.list.MoviesListActivity;
 
 import javax.inject.Inject;
 
@@ -15,8 +16,8 @@ import javax.inject.Inject;
 
 public class AppPreferencesHelper implements PreferencesHelper {
 
-    SharedPreferences mSharedPreferences;
-    Context mContext;
+    private SharedPreferences mSharedPreferences;
+    private Context mContext;
 
     @Inject
     public AppPreferencesHelper(SharedPreferences sharedPreferences,
