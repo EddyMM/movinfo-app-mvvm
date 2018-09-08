@@ -3,11 +3,9 @@ package com.solo.movinfo.data;
 
 import android.arch.lifecycle.LiveData;
 
-import com.solo.movinfo.data.network.models.MoviesResponse;
+import com.solo.movinfo.data.network.models.Movie;
 
 import java.util.List;
-
-import retrofit2.Response;
 
 public interface DataManager {
 
@@ -15,9 +13,9 @@ public interface DataManager {
 
     boolean wasSplashScreenSeen();
 
-    LiveData<MoviesResponse> getPopularMovies(int page);
+    LiveData<List<Movie>> getPopularMovies(int page);
 
-    LiveData<MoviesResponse> getTopRatedMovies(int page);
+    LiveData<List<Movie>> getTopRatedMovies(int page);
 
     String getSortCriteria();
 

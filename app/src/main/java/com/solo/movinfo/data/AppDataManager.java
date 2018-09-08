@@ -7,8 +7,11 @@ import android.support.annotation.NonNull;
 
 import com.solo.movinfo.data.network.MovieDbApi;
 import com.solo.movinfo.data.network.MovieDbService;
+import com.solo.movinfo.data.network.models.Movie;
 import com.solo.movinfo.data.network.models.MoviesResponse;
 import com.solo.movinfo.data.preferences.PreferencesHelper;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -37,10 +40,10 @@ public class AppDataManager implements DataManager {
     }
 
     @Override
-    public LiveData<MoviesResponse> getPopularMovies(int page) {
+    public LiveData<List<Movie>> getPopularMovies(int page) {
         Timber.d("Making an API call for popular movies");
 
-        final MutableLiveData<MoviesResponse> moviesResponseMutableLiveData =
+        final MutableLiveData<List<Movie>> moviesResponseMutableLiveData =
                 new MutableLiveData<>();
 
         MovieDbService movieDbService = MovieDbApi.getInstance(page);
@@ -50,8 +53,13 @@ public class AppDataManager implements DataManager {
             @Override
             public void onResponse(@NonNull Call<MoviesResponse> call,
                     @NonNull Response<MoviesResponse> response) {
-                Timber.d("Received movies: %s", response.body());
-                moviesResponseMutableLiveData.setValue(response.body());
+                MoviesResponse moviesResponse = response.body();
+
+                if (moviesResponse == null) {
+                    moviesResponseMutableLiveData.setValue(null);
+                } else {
+                    moviesResponseMutableLiveData.setValue(moviesResponse.getResults());
+                }
             }
 
             @Override
@@ -65,10 +73,10 @@ public class AppDataManager implements DataManager {
     }
 
     @Override
-    public LiveData<MoviesResponse> getTopRatedMovies(int page) {
+    public LiveData<List<Movie>> getTopRatedMovies(int page) {
         Timber.d("Making an API call for top rated movies");
 
-        final MutableLiveData<MoviesResponse> moviesResponseMutableLiveData =
+        final MutableLiveData<List<Movie>> moviesResponseMutableLiveData =
                 new MutableLiveData<>();
 
         MovieDbService movieDbService = MovieDbApi.getInstance(page);
@@ -79,7 +87,13 @@ public class AppDataManager implements DataManager {
             public void onResponse(@NonNull Call<MoviesResponse> call,
                     @NonNull Response<MoviesResponse> response) {
                 Timber.d("Received movies: %s", response.body());
-                moviesResponseMutableLiveData.setValue(response.body());
+                MoviesResponse moviesResponse = response.body();
+                if (moviesResponse == null) {
+                    moviesResponseMutableLiveData.setValue(null);
+                } else {
+                    moviesResponseMutableLiveData.setValue(moviesResponse.getResults());
+                }
+
             }
 
             @Override

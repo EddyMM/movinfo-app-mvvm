@@ -9,7 +9,9 @@ import android.support.annotation.NonNull;
 import com.solo.movinfo.MovinfoApplication;
 import com.solo.movinfo.R;
 import com.solo.movinfo.data.DataManager;
-import com.solo.movinfo.data.network.models.MoviesResponse;
+import com.solo.movinfo.data.network.models.Movie;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -20,7 +22,7 @@ public class MoviesListViewModel extends AndroidViewModel implements
         SharedPreferences.OnSharedPreferenceChangeListener {
     @Inject
     DataManager mDataManager;
-    MediatorLiveData<MoviesResponse> moviesResponseMediatorLiveData = new MediatorLiveData<>();
+    MediatorLiveData<List<Movie>> mMoviesMediatorLiveData = new MediatorLiveData<>();
 
     public MoviesListViewModel(
             @NonNull Application application) {
@@ -42,12 +44,12 @@ public class MoviesListViewModel extends AndroidViewModel implements
         if (mDataManager.getSortCriteria().equals(
                 getApplication().getString(R.string.sort_by_popularity_value))) {
             Timber.d("Loading popular movies from API");
-            moviesResponseMediatorLiveData.addSource(mDataManager.getPopularMovies(1),
-                    moviesResponse -> moviesResponseMediatorLiveData.setValue(moviesResponse));
+            mMoviesMediatorLiveData.addSource(mDataManager.getPopularMovies(1),
+                    movies -> mMoviesMediatorLiveData.setValue(movies));
         } else {
             Timber.d("Loading top rated movies from API");
-            moviesResponseMediatorLiveData.addSource(mDataManager.getTopRatedMovies(1),
-                    moviesResponse -> moviesResponseMediatorLiveData.setValue(moviesResponse));
+            mMoviesMediatorLiveData.addSource(mDataManager.getTopRatedMovies(1),
+                    movies -> mMoviesMediatorLiveData.setValue(movies));
         }
     }
 }

@@ -78,9 +78,9 @@ public class MoviesListFragment extends Fragment {
 
         showProgressBar();
 
-        moviesListViewModel.moviesResponseMediatorLiveData.observe(this, moviesResponse -> {
-            if (moviesResponse != null) {
-                mMoviesListAdapter.addMovies(moviesResponse.getResults());
+        moviesListViewModel.mMoviesMediatorLiveData.observe(this, movies -> {
+            if (movies != null) {
+                mMoviesListAdapter.addMovies(movies);
             } else {
                 Timber.d("No movies fetched");
             }
