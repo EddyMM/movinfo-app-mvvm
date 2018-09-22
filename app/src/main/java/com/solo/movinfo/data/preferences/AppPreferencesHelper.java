@@ -6,7 +6,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.solo.movinfo.R;
-import com.solo.movinfo.ui.movies.list.MoviesListActivity;
+import com.solo.movinfo.utils.Constants;
 
 import javax.inject.Inject;
 
@@ -20,7 +20,7 @@ public class AppPreferencesHelper implements PreferencesHelper {
     private Context mContext;
 
     @Inject
-    public AppPreferencesHelper(SharedPreferences sharedPreferences,
+    AppPreferencesHelper(SharedPreferences sharedPreferences,
             Context context) {
         mSharedPreferences = sharedPreferences;
         mContext = context;
@@ -37,6 +37,14 @@ public class AppPreferencesHelper implements PreferencesHelper {
     @Override
     public boolean wasSplashScreenSeen() {
         return mSharedPreferences.getBoolean(SPLASH_SCREEN_SEEN, false);
+    }
+
+    @Override
+    public void setSortCriteria(String sortCriteria) {
+        mSharedPreferences
+                .edit()
+                .putString(Constants.SORT_ORDER_KEY, sortCriteria)
+                .apply();
     }
 
     @Override

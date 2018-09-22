@@ -1,13 +1,11 @@
 package com.solo.movinfo.ui.movies.list;
 
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,9 +19,7 @@ import android.widget.ProgressBar;
 
 import com.solo.movinfo.R;
 import com.solo.movinfo.data.DataManager;
-import com.solo.movinfo.ui.movies.settings.SettingsActivity;
 import com.solo.movinfo.utils.Constants;
-import com.solo.movinfo.utils.NetworkUtils;
 
 import javax.inject.Inject;
 
@@ -33,18 +29,15 @@ import timber.log.Timber;
  * Fragment to host and manage movies list
  */
 
-public class MoviesListFragment extends Fragment {
+public class MoviesListFragment extends Fragment implements
+        SharedPreferences.OnSharedPreferenceChangeListener {
     @Inject
     DataManager mDataManager;
 
+    private RecyclerView mMoviesRecyclerView;
     private ProgressBar mMoviesListProgressBar;
     private MoviesListAdapter mMoviesListAdapter;
-    private GridLayoutManager mMoviesListGridLayout;
-    private Snackbar mInternetConnectionSnackbar;
     private MoviesListViewModel moviesListViewModel;
-
-    private boolean isLoading;
-    private boolean retryAttempted;
 
     @Nullable
     @Override
@@ -53,8 +46,7 @@ public class MoviesListFragment extends Fragment {
         // Ensure menu is displayed
         setHasOptionsMenu(true);
 
-        ((MoviesListActivity) requireActivity()).getActivityComponent().inject(this);
-        // mMoviesListPresenter.onAttach(this);
+        ((MoviesListActivity) requireActivity()).getActivitySubComponent().inject(this);
 
         if (!mDataManager.wasSplashScreenSeen()) {
             mDataManager.setSplashScreenSeenByUser();
@@ -64,29 +56,12 @@ public class MoviesListFragment extends Fragment {
 
         initUI(view);
 
-        setupViewModel();
-
         // Read preferences and load UI accordingly
         setupSharedPreferences();
 
+        setupViewModel();
+
         return view;
-    }
-
-    private void setupViewModel() {
-        moviesListViewModel = ViewModelProviders.of(this).get(
-                MoviesListViewModel.class);
-
-        showProgressBar();
-
-        moviesListViewModel.mMoviesMediatorLiveData.observe(this, movies -> {
-            if (movies != null) {
-                mMoviesListAdapter.addMovies(movies);
-            } else {
-                Timber.d("No movies fetched");
-            }
-
-            hideProgressBar();
-        });
     }
 
     @Override
@@ -97,10 +72,16 @@ public class MoviesListFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.movies_list_settings_menu_item) {
-            openSettings();
+        if (item.getItemId() == R.id.movies_list_popularity_menu_item) {
+            Timber.d("Sort by popularity");
+            mDataManager.setSortCriteria(Constants.POPULARITY_PREFERENCE);
+            return true;
+        } else if ((item.getItemId() == R.id.movies_list_rating_menu_item)) {
+            Timber.d("Sort by rating");
+            mDataManager.setSortCriteria(Constants.RATING_PREFERENCE);
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -110,85 +91,50 @@ public class MoviesListFragment extends Fragment {
         SharedPreferences sharedPreferences = PreferenceManager.
                 getDefaultSharedPreferences(requireContext());
 
-        sharedPreferences.unregisterOnSharedPreferenceChangeListener(moviesListViewModel);
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals(getString(R.string.sort_order_key))) {
+            Timber.d("Detected a change in preferences to: %s", mDataManager.getSortCriteria());
+
+            hideList();
+            showProgressBar();
+
+            moviesListViewModel.refreshMoviesList();
+        }
     }
 
     private void initUI(View view) {
-        RecyclerView moviesRecyclerView = view.findViewById(R.id.moviesListRecyclerView);
+        mMoviesRecyclerView = view.findViewById(R.id.moviesListRecyclerView);
 
-        mMoviesListGridLayout = new GridLayoutManager(this.getContext(),
+        GridLayoutManager moviesListGridLayout = new GridLayoutManager(this.getContext(),
                 Constants.MOVIES_LIST_NO_OF_COLUMNS);
 
-        moviesRecyclerView.setLayoutManager(mMoviesListGridLayout);
+        mMoviesRecyclerView.setLayoutManager(moviesListGridLayout);
         mMoviesListAdapter = new MoviesListAdapter(this.getContext());
-        moviesRecyclerView.setAdapter(mMoviesListAdapter);
-        moviesRecyclerView.addOnScrollListener(new MoviesListScrollListener());
+        mMoviesRecyclerView.setAdapter(mMoviesListAdapter);
 
         mMoviesListProgressBar = view.findViewById(R.id.moviesListProgressBar);
     }
 
-    // @Override
-    public void showProgressBar() {
-        mMoviesListProgressBar.setVisibility(View.VISIBLE);
-    }
+    private void setupViewModel() {
+        showProgressBar();
 
-    // @Override
-    public void hideProgressBar() {
-        mMoviesListProgressBar.setVisibility(View.INVISIBLE);
-    }
+        moviesListViewModel = ViewModelProviders.of(this).get(
+                MoviesListViewModel.class);
+        moviesListViewModel.getMoviesLiveData().observe(this, movies -> {
+            if (movies != null) {
+                Timber.d("Adding list to adapter");
+                mMoviesListAdapter.submitList(movies);
+            } else {
+                Timber.d("No movies fetched");
+            }
 
-    /**
-     * Displays a SnackBar prompting user to connect to the internet in order to load movies
-     */
-    // @Override
-    public void showNoInternetConnectionMessage() {
-        if (mInternetConnectionSnackbar == null || retryAttempted) {
-            // Reset the retry attempt to ensure recursive retries are recognized
-            retryAttempted = false;
-
-            mInternetConnectionSnackbar = Snackbar.make(
-                    requireActivity().findViewById(R.id.single_fragment),
-                    getString(R.string.no_internet_connection_message), Snackbar.LENGTH_INDEFINITE)
-                    .setAction(getString(R.string.retry), (v) -> {
-                        if (!NetworkUtils.isInternetConnected(requireContext())) {
-                            retryAttempted = true;
-                            showNoInternetConnectionMessage();
-                            return;
-                        }
-                        fetchNextPageOfMovies();
-                    });
-        }
-
-        if (!mInternetConnectionSnackbar.isShown()) {
-            mInternetConnectionSnackbar.show();
-        }
-    }
-
-    /**
-     * Removes the SnackBar prompting user to connect to the internet
-     */
-    // @Override
-    public void removeNoInternetConnectionMessage() {
-        if (mInternetConnectionSnackbar != null && mInternetConnectionSnackbar.isShown()) {
-            mInternetConnectionSnackbar.dismiss();
-        }
-    }
-
-    // @Override
-    public void setIsLoadingMovies(boolean isLoadingMovies) {
-        isLoading = isLoadingMovies;
-    }
-
-//    @Override
-//    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-//        if (key.equals(getString(R.string.sort_order_key))) {
-//            fetchNextPageOfMovies();
-//        }
-//    }
-
-    public void openSettings() {
-        Intent settingsIntent = new Intent(requireActivity(), SettingsActivity.class);
-        startActivity(settingsIntent);
+            hideProgressBar();
+            showList();
+        });
     }
 
     /**
@@ -199,57 +145,23 @@ public class MoviesListFragment extends Fragment {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(
                 this.requireContext());
 
-        // Go ahead and fetch movies after reading preferred sort criteria
-        // fetchNextPageOfMovies();
-
         // Register as a listener for any changes in preferences
-        sharedPreferences.registerOnSharedPreferenceChangeListener(moviesListViewModel);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
-    /**
-     * Gets the next page of movies based on the movies sort criteria
-     */
-    private void fetchNextPageOfMovies() {
-        setIsLoadingMovies(true);
-
-        // Ensure device is connected to the internet
-        if (!NetworkUtils.isInternetConnected(requireContext())) {
-            setIsLoadingMovies(false);
-            showNoInternetConnectionMessage();
-            return;
-        }
-
-        // Dismiss the no internet connection if it is shown
-        removeNoInternetConnectionMessage();
-
-        // mMoviesListPresenter.onFetchMovies();
+    public void showProgressBar() {
+        mMoviesListProgressBar.setVisibility(View.VISIBLE);
     }
 
-    /**
-     * Scroll Listener to implement pagination (fetch more movies as the
-     * user scrolls through them)
-     */
-    private class MoviesListScrollListener extends RecyclerView.OnScrollListener {
-        @Override
-        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-            super.onScrolled(recyclerView, dx, dy);
+    public void hideProgressBar() {
+        mMoviesListProgressBar.setVisibility(View.INVISIBLE);
+    }
 
-            // Obtain some info about the number of items displayed already
-            int visibleItemCount = mMoviesListGridLayout.getChildCount();
-            int totalItemCount = mMoviesListGridLayout.getItemCount();
-            int lastVisibleItemPosition = mMoviesListGridLayout.findLastVisibleItemPosition();
+    private void showList() {
+        mMoviesRecyclerView.setVisibility(View.VISIBLE);
+    }
 
-            Timber.d("Total item count: %s, Visible item count: %s, Last visible item pos: %s",
-                    totalItemCount, visibleItemCount, lastVisibleItemPosition);
-
-            // Apply pagination only if movies are not already being fetched as scrolling happens
-            if (!isLoading) {
-                if (lastVisibleItemPosition >= (totalItemCount * Constants.SCROLL_PAGINATION_RATIO)
-                        && visibleItemCount < totalItemCount) {
-                    Timber.d("Fetching more movies");
-                    fetchNextPageOfMovies();
-                }
-            }
-        }
+    private void hideList() {
+        mMoviesRecyclerView.setVisibility(View.GONE);
     }
 }

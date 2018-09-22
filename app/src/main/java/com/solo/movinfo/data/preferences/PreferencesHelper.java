@@ -10,5 +10,7 @@ public interface PreferencesHelper {
 
     boolean wasSplashScreenSeen();
 
+    void setSortCriteria(String sortCriteria);
+
     String getSortCriteria();
 }

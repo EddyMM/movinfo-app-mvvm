@@ -2,54 +2,62 @@ package com.solo.movinfo.ui.movies.list;
 
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
-import android.arch.lifecycle.MediatorLiveData;
-import android.content.SharedPreferences;
+import android.arch.lifecycle.LiveData;
+import android.arch.paging.LivePagedListBuilder;
+import android.arch.paging.PagedList;
 import android.support.annotation.NonNull;
 
 import com.solo.movinfo.MovinfoApplication;
-import com.solo.movinfo.R;
-import com.solo.movinfo.data.DataManager;
+import com.solo.movinfo.data.datasources.movieslist.MoviesListDataSourceFactory;
 import com.solo.movinfo.data.network.models.Movie;
-
-import java.util.List;
+import com.solo.movinfo.di.component.MoviesListSubComponent;
+import com.solo.movinfo.di.module.MoviesListModule;
 
 import javax.inject.Inject;
 
 import timber.log.Timber;
 
 
-public class MoviesListViewModel extends AndroidViewModel implements
-        SharedPreferences.OnSharedPreferenceChangeListener {
+public class MoviesListViewModel extends AndroidViewModel {
     @Inject
-    DataManager mDataManager;
-    MediatorLiveData<List<Movie>> mMoviesMediatorLiveData = new MediatorLiveData<>();
+    MoviesListDataSourceFactory mMoviesListDataSourceFactory;
+
+    private LiveData<PagedList<Movie>> mMoviesLiveData;
+
+    LiveData<PagedList<Movie>> getMoviesLiveData() {
+        return mMoviesLiveData;
+    }
+
 
     public MoviesListViewModel(
             @NonNull Application application) {
         super(application);
 
-        ((MovinfoApplication) application).getApplicationComponent().inject(this);
+        MoviesListSubComponent moviesListSubComponent = ((MovinfoApplication) application)
+                .getApplicationComponent()
+                .moviesListSubComponentBuilder()
+                .moviesListModule(new MoviesListModule())
+                .build();
+
+        moviesListSubComponent.inject(this);
 
         fetchMoviesLiveData();
     }
 
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals(getApplication().getString(R.string.sort_order_key))) {
-            fetchMoviesLiveData();
-        }
+    private void fetchMoviesLiveData() {
+        Timber.d("Loading movies from API");
+
+        PagedList.Config config = new PagedList.Config.Builder()
+                .setPageSize(20)
+                .setEnablePlaceholders(false)
+                .setPrefetchDistance(5)
+                .build();
+
+        mMoviesLiveData = new LivePagedListBuilder<>(mMoviesListDataSourceFactory, config)
+                .build();
     }
 
-    private void fetchMoviesLiveData() {
-        if (mDataManager.getSortCriteria().equals(
-                getApplication().getString(R.string.sort_by_popularity_value))) {
-            Timber.d("Loading popular movies from API");
-            mMoviesMediatorLiveData.addSource(mDataManager.getPopularMovies(1),
-                    movies -> mMoviesMediatorLiveData.setValue(movies));
-        } else {
-            Timber.d("Loading top rated movies from API");
-            mMoviesMediatorLiveData.addSource(mDataManager.getTopRatedMovies(1),
-                    movies -> mMoviesMediatorLiveData.setValue(movies));
-        }
+    void refreshMoviesList() {
+        mMoviesListDataSourceFactory.getMoviesListDataSource().invalidate();
     }
 }

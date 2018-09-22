@@ -21,4 +21,6 @@
     <string name="rating_label">Rating</string>
     <string name="no_internet_connection_message">No internet connection. \nKindly connect to the internet then try again</string>
     <string name="retry">Retry</string>
+    <string name="action_sort_order">Sort by</string>
+    <string name="sort_order_tooltip_text">Sort by e.g. rating</string>
 </resources>

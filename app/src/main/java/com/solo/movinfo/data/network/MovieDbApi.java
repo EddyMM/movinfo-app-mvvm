@@ -13,7 +13,7 @@ public class MovieDbApi {
     private MovieDbApi() {
     }
 
-    public static MovieDbService getInstance(int page) {
+    public static MovieDbService getInstance() {
         Retrofit retrofit;
 
         // Build a client with an interceptor to add the API key
@@ -25,7 +25,6 @@ public class MovieDbApi {
                     HttpUrl modifiedHttpUrl = initialHttpUrl.newBuilder()
                             .addQueryParameter(Constants.API_KEY_REQUEST_KEY,
                                     BuildConfig.TheMovieDbApiToken)
-                            .addQueryParameter(Constants.PAGE_KEY, String.valueOf(page))
                             .build();
                     Request modifiedRequest = initialRequest.newBuilder()
                             .url(modifiedHttpUrl)

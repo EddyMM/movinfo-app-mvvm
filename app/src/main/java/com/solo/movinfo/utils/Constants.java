@@ -7,8 +7,6 @@ package com.solo.movinfo.utils;
 public class Constants {
     public static final String SPLASH_SCREEN_SEEN = "SPLASH_SCREEN_SEEN";
 
-    public static final String SHARED_PREFERENCES_NAME = "MOVINFO_SHARED_PREFERENCES";
-
     public static final String MOVIE_DB_API_BASE_URL = "https://api.themoviedb.org/3/";
 
     public static final String MOVIE_DB_POSTER_URL = "http://image.tmdb.org/t/p/";
@@ -21,7 +19,9 @@ public class Constants {
 
     public static final int MOVIES_LIST_NO_OF_COLUMNS = 2;
 
-    public static final String PAGE_KEY = "page";
+    public static final String SORT_ORDER_KEY = "sort_order";
 
-    public static final float SCROLL_PAGINATION_RATIO = 0.9f;
+    public static final String POPULARITY_PREFERENCE = "popularity";
+
+    public static final String RATING_PREFERENCE = "rating";
 }

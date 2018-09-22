@@ -13,9 +13,7 @@ public interface DataManager {
 
     boolean wasSplashScreenSeen();
 
-    LiveData<List<Movie>> getPopularMovies(int page);
-
-    LiveData<List<Movie>> getTopRatedMovies(int page);
+    void setSortCriteria(String sortCriteria);
 
     String getSortCriteria();
 

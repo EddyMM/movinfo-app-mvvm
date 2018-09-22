@@ -30,7 +30,7 @@ public class SplashFragment extends Fragment {
 
     public void onCreate(@Nullable Bundle savedInstanceState) {
         // Inject member variables with objects
-        ((SplashActivity) requireActivity()).getActivityComponent().inject(this);
+        ((SplashActivity) requireActivity()).getActivitySubComponent().inject(this);
 
         // Move onto movies list if splash screen has been seen before
         if (mDataManager.wasSplashScreenSeen()) {
