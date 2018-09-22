@@ -49,7 +49,9 @@ public class MoviesListFragment extends Fragment implements
     private MoviesListViewModel moviesListViewModel;
     private Snackbar mInternetConnectionSnackbar;
 
-    private boolean firstLoad;
+    private boolean firstLoad; // Used by connectivity receiver to avoid taking actions
+    // if user is initially connected
+    
     private ConnectivityStateChangeReceiver mConnectivityStateChangeReceiver;
 
     @Nullable
@@ -252,6 +254,8 @@ public class MoviesListFragment extends Fragment implements
 
             mInternetConnectionSnackbar.show();
 
+            // Retry if initial load was done but otherwise fetch whole e.g. if on app start
+            // device was disconnected but user established a connection
             List currentMoviesList = moviesListViewModel.getMoviesLiveData().getValue();
             if (currentMoviesList!= null && currentMoviesList.size() > 0) {
                 moviesListViewModel.retry();
