@@ -117,6 +117,8 @@ public class MoviesListFragment extends Fragment implements
         mMoviesRecyclerView.setAdapter(mMoviesListAdapter);
 
         mMoviesListProgressBar = view.findViewById(R.id.moviesListProgressBar);
+
+        setMoviesListTitle();
     }
 
     private void setupViewModel() {
@@ -133,6 +135,7 @@ public class MoviesListFragment extends Fragment implements
             }
 
             hideProgressBar();
+            setMoviesListTitle();
             showList();
         });
     }
@@ -147,6 +150,14 @@ public class MoviesListFragment extends Fragment implements
 
         // Register as a listener for any changes in preferences
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+    }
+
+    private void setMoviesListTitle() {
+        if (mDataManager.getSortCriteria().equals(Constants.RATING_PREFERENCE)) {
+            requireActivity().setTitle(getString(R.string.top_rated_movies_title));
+        } else {
+            requireActivity().setTitle(getString(R.string.popular_movies_title));
+        }
     }
 
     public void showProgressBar() {
