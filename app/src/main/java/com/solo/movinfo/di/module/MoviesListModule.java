@@ -1,7 +1,7 @@
 package com.solo.movinfo.di.module;
 
 import com.solo.movinfo.data.DataManager;
-import com.solo.movinfo.data.datasources.movieslist.MoviesListDataSourceFactory;
+import com.solo.movinfo.data.datasources.MoviesListDataSourceFactory;
 
 import dagger.Module;
 import dagger.Provides;

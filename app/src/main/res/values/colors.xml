@@ -8,4 +8,6 @@
 
     <color name="primaryTextColor">#ffffff</color>
     <color name="secondaryTextColor">#ffffff</color>
+
+    <color name="connectedColor">#43a047</color>
 </resources>

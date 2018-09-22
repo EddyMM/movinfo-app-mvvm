@@ -1,4 +1,4 @@
-package com.solo.movinfo.data.datasources.movieslist;
+package com.solo.movinfo.data.datasources;
 
 
 import android.arch.paging.PageKeyedDataSource;
@@ -12,6 +12,8 @@ import com.solo.movinfo.data.network.models.MoviesResponse;
 import com.solo.movinfo.utils.Constants;
 
 import java.io.IOException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import retrofit2.Call;
 import retrofit2.HttpException;
@@ -22,6 +24,9 @@ public class MoviesListDataSource extends PageKeyedDataSource<Integer, Movie> {
 
     private MovieDbService mMovieDbService;
     private DataManager mDataManager;
+
+    private LoadParams<Integer> mParams;
+    private LoadCallback<Integer, Movie> mCallback;
 
     MoviesListDataSource(DataManager dataManager) {
         mMovieDbService = MovieDbApi.getInstance();
@@ -68,6 +73,8 @@ public class MoviesListDataSource extends PageKeyedDataSource<Integer, Movie> {
     @Override
     public void loadAfter(@NonNull LoadParams<Integer> params,
             @NonNull LoadCallback<Integer, Movie> callback) {
+        this.mParams = params;
+        this.mCallback = callback;
 
         final int page = params.key;
 
@@ -82,7 +89,6 @@ public class MoviesListDataSource extends PageKeyedDataSource<Integer, Movie> {
         try {
             Response<MoviesResponse> movieResponse = call.execute();
 
-            Timber.d("Received movies: %s", movieResponse.body());
             MoviesResponse moviesResponse = movieResponse.body();
             if (moviesResponse == null) {
                 Timber.e(new HttpException(movieResponse));
@@ -90,11 +96,14 @@ public class MoviesListDataSource extends PageKeyedDataSource<Integer, Movie> {
                 Timber.d("Response: %s", moviesResponse.getResults());
                 callback.onResult(moviesResponse.getResults(), page + 1);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException | IllegalStateException e) {
             Timber.e(e);
         }
     }
 
 
+    public void retry() {
+        Executor executor = Executors.newFixedThreadPool(3);
+        executor.execute(()-> loadAfter(mParams, mCallback));
+    }
 }

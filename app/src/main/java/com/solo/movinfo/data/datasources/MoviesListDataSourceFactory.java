@@ -1,4 +1,4 @@
-package com.solo.movinfo.data.datasources.movieslist;
+package com.solo.movinfo.data.datasources;
 
 
 import android.arch.lifecycle.MutableLiveData;

@@ -28,6 +28,8 @@ import com.solo.movinfo.data.DataManager;
 import com.solo.movinfo.utils.Constants;
 import com.solo.movinfo.utils.NetworkUtils;
 
+import java.util.List;
+
 import javax.inject.Inject;
 
 import timber.log.Timber;
@@ -48,6 +50,7 @@ public class MoviesListFragment extends Fragment implements
     private Snackbar mInternetConnectionSnackbar;
 
     private boolean firstLoad;
+    private ConnectivityStateChangeReceiver mConnectivityStateChangeReceiver;
 
     @Nullable
     @Override
@@ -66,16 +69,24 @@ public class MoviesListFragment extends Fragment implements
 
         initUI(view);
 
-        registerConnectivityChangeReceiver();
-
-
-
         // Read preferences and load UI accordingly
         setupSharedPreferences();
 
         setupViewModel();
 
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        registerConnectivityChangeReceiver();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unregisterConnectivityChangeReceiver();
     }
 
     @Override
@@ -197,11 +208,17 @@ public class MoviesListFragment extends Fragment implements
     private void registerConnectivityChangeReceiver() {
         firstLoad = true;
 
+        mConnectivityStateChangeReceiver = new ConnectivityStateChangeReceiver();
+
         IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-        requireActivity().registerReceiver(new ConnectivityStateChangeLReceiver(), intentFilter);
+        requireActivity().registerReceiver(mConnectivityStateChangeReceiver, intentFilter);
     }
 
-    private class ConnectivityStateChangeLReceiver extends BroadcastReceiver {
+    private void unregisterConnectivityChangeReceiver() {
+        requireActivity().unregisterReceiver(mConnectivityStateChangeReceiver);
+    }
+
+    private class ConnectivityStateChangeReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -227,11 +244,20 @@ public class MoviesListFragment extends Fragment implements
 
             mInternetConnectionSnackbar = Snackbar.make(
                     requireActivity().findViewById(R.id.single_fragment),
-                    "Connected",
-                    Snackbar.LENGTH_INDEFINITE);
-            mInternetConnectionSnackbar.setAction("REFRESH",
-                    (view) -> refresh());
+                    getString(R.string.connected_to_internet),
+                    Snackbar.LENGTH_SHORT);
+
+            mInternetConnectionSnackbar.getView()
+                    .setBackgroundColor(getResources().getColor(R.color.connectedColor));
+
             mInternetConnectionSnackbar.show();
+
+            List currentMoviesList = moviesListViewModel.getMoviesLiveData().getValue();
+            if (currentMoviesList!= null && currentMoviesList.size() > 0) {
+                moviesListViewModel.retry();
+            } else {
+                moviesListViewModel.refreshMoviesList();
+            }
         }
 
         private void showNotConnectedToInternet() {
@@ -241,7 +267,7 @@ public class MoviesListFragment extends Fragment implements
 
             mInternetConnectionSnackbar = Snackbar.make(
                     requireActivity().findViewById(R.id.single_fragment),
-                    "No internet connection",
+                    getString(R.string.no_internet_connection_message),
                     Snackbar.LENGTH_INDEFINITE);
             mInternetConnectionSnackbar.show();
         }

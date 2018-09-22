@@ -8,7 +8,7 @@ import android.arch.paging.PagedList;
 import android.support.annotation.NonNull;
 
 import com.solo.movinfo.MovinfoApplication;
-import com.solo.movinfo.data.datasources.movieslist.MoviesListDataSourceFactory;
+import com.solo.movinfo.data.datasources.MoviesListDataSourceFactory;
 import com.solo.movinfo.data.network.models.Movie;
 import com.solo.movinfo.di.component.MoviesListSubComponent;
 import com.solo.movinfo.di.module.MoviesListModule;
@@ -58,5 +58,9 @@ public class MoviesListViewModel extends AndroidViewModel {
 
     void refreshMoviesList() {
         mMoviesListDataSourceFactory.getMoviesListDataSource().invalidate();
+    }
+
+    void retry() {
+        mMoviesListDataSourceFactory.getMoviesListDataSource().retry();
     }
 }
