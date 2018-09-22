@@ -50,7 +50,6 @@ public class MoviesListViewModel extends AndroidViewModel {
         PagedList.Config config = new PagedList.Config.Builder()
                 .setPageSize(20)
                 .setEnablePlaceholders(false)
-                .setPrefetchDistance(5)
                 .build();
 
         mMoviesLiveData = new LivePagedListBuilder<>(mMoviesListDataSourceFactory, config)
