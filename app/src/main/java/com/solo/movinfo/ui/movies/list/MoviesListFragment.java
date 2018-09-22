@@ -1,11 +1,17 @@
 package com.solo.movinfo.ui.movies.list;
 
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -20,6 +26,7 @@ import android.widget.ProgressBar;
 import com.solo.movinfo.R;
 import com.solo.movinfo.data.DataManager;
 import com.solo.movinfo.utils.Constants;
+import com.solo.movinfo.utils.NetworkUtils;
 
 import javax.inject.Inject;
 
@@ -38,6 +45,9 @@ public class MoviesListFragment extends Fragment implements
     private ProgressBar mMoviesListProgressBar;
     private MoviesListAdapter mMoviesListAdapter;
     private MoviesListViewModel moviesListViewModel;
+    private Snackbar mInternetConnectionSnackbar;
+
+    private boolean firstLoad;
 
     @Nullable
     @Override
@@ -55,6 +65,10 @@ public class MoviesListFragment extends Fragment implements
         View view = inflater.inflate(R.layout.movies_list_fragment, container, false);
 
         initUI(view);
+
+        registerConnectivityChangeReceiver();
+
+
 
         // Read preferences and load UI accordingly
         setupSharedPreferences();
@@ -99,10 +113,7 @@ public class MoviesListFragment extends Fragment implements
         if (key.equals(getString(R.string.sort_order_key))) {
             Timber.d("Detected a change in preferences to: %s", mDataManager.getSortCriteria());
 
-            hideList();
-            showProgressBar();
-
-            moviesListViewModel.refreshMoviesList();
+            refresh();
         }
     }
 
@@ -174,5 +185,65 @@ public class MoviesListFragment extends Fragment implements
 
     private void hideList() {
         mMoviesRecyclerView.setVisibility(View.GONE);
+    }
+
+    private void refresh() {
+        hideList();
+        showProgressBar();
+
+        moviesListViewModel.refreshMoviesList();
+    }
+
+    private void registerConnectivityChangeReceiver() {
+        firstLoad = true;
+
+        IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        requireActivity().registerReceiver(new ConnectivityStateChangeLReceiver(), intentFilter);
+    }
+
+    private class ConnectivityStateChangeLReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            boolean isConnected = NetworkUtils.isInternetConnected(requireContext());
+
+            if (!isConnected) {
+                Timber.d("Not Connected!");
+                showNotConnectedToInternet();
+            }
+
+            if (isConnected && !firstLoad) {
+                Timber.d("Connected!");
+                showConnectedToInternet();
+            }
+
+            firstLoad = false;
+        }
+
+        private void showConnectedToInternet() {
+            if (mInternetConnectionSnackbar != null && mInternetConnectionSnackbar.isShown()) {
+                mInternetConnectionSnackbar.dismiss();
+            }
+
+            mInternetConnectionSnackbar = Snackbar.make(
+                    requireActivity().findViewById(R.id.single_fragment),
+                    "Connected",
+                    Snackbar.LENGTH_INDEFINITE);
+            mInternetConnectionSnackbar.setAction("REFRESH",
+                    (view) -> refresh());
+            mInternetConnectionSnackbar.show();
+        }
+
+        private void showNotConnectedToInternet() {
+            if (mInternetConnectionSnackbar != null && mInternetConnectionSnackbar.isShown()) {
+                mInternetConnectionSnackbar.dismiss();
+            }
+
+            mInternetConnectionSnackbar = Snackbar.make(
+                    requireActivity().findViewById(R.id.single_fragment),
+                    "No internet connection",
+                    Snackbar.LENGTH_INDEFINITE);
+            mInternetConnectionSnackbar.show();
+        }
     }
 }
