@@ -1,4 +1,4 @@
-package com.solo.movinfo.data.network.models;
+package com.solo.movinfo.data.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -10,54 +10,48 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class Movie implements Parcelable {
+
     @SerializedName("poster_url")
     private String posterUrl;
+
     @SerializedName("vote_count")
     private int voteCount;
+
     @SerializedName("id")
     private String movieId;
+
     @SerializedName("vote_average")
     private float voteAverage;
+
     @SerializedName("title")
     private String title;
+
     @SerializedName("popularity")
     private float popularity;
+
     @SerializedName("poster_path")
     private String posterPath;
+
     @SerializedName("original_language")
     private String originalLanguage;
+
     @SerializedName("original_title")
     private String originalTitle;
+
     @SerializedName("genre_ids")
     private ArrayList<String> genreIds;
+
     @SerializedName("backdrop_path")
     private String backdropPath;
+
     @SerializedName("adult")
     private boolean adult;
+
     @SerializedName("overview")
     private String overview;
+
     @SerializedName("release_date")
     private Date releaseDate;
-
-    public Movie(String posterUrl, int voteCount, String movieId, float voteAverage,
-            String title, float popularity, String posterPath, String originalLanguage,
-            String originalTitle, ArrayList<String> genreIds, String backdropPath, boolean adult,
-            String overview, Date releaseDate) {
-        this.posterUrl = posterUrl;
-        this.voteCount = voteCount;
-        this.movieId = movieId;
-        this.voteAverage = voteAverage;
-        this.title = title;
-        this.popularity = popularity;
-        this.posterPath = posterPath;
-        this.originalLanguage = originalLanguage;
-        this.originalTitle = originalTitle;
-        this.genreIds = genreIds;
-        this.backdropPath = backdropPath;
-        this.adult = adult;
-        this.overview = overview;
-        this.releaseDate = releaseDate;
-    }
 
     @Override
     public String toString() {

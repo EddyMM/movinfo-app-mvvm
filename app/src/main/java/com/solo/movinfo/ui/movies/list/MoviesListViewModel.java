@@ -9,7 +9,7 @@ import android.support.annotation.NonNull;
 
 import com.solo.movinfo.MovinfoApplication;
 import com.solo.movinfo.data.datasources.MoviesListDataSourceFactory;
-import com.solo.movinfo.data.network.models.Movie;
+import com.solo.movinfo.data.model.Movie;
 import com.solo.movinfo.di.component.MoviesListSubComponent;
 import com.solo.movinfo.di.module.MoviesListModule;
 

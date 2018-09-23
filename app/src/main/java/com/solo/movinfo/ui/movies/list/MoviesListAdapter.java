@@ -15,7 +15,7 @@ import android.widget.TextView;
 
 import com.solo.movinfo.BuildConfig;
 import com.solo.movinfo.R;
-import com.solo.movinfo.data.network.models.Movie;
+import com.solo.movinfo.data.model.Movie;
 import com.solo.movinfo.ui.movies.detail.MoviesDetailActivity;
 import com.solo.movinfo.utils.Constants;
 import com.squareup.picasso.Picasso;

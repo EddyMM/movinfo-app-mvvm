@@ -7,8 +7,8 @@ import android.support.annotation.NonNull;
 import com.solo.movinfo.data.DataManager;
 import com.solo.movinfo.data.network.MovieDbApi;
 import com.solo.movinfo.data.network.MovieDbService;
-import com.solo.movinfo.data.network.models.Movie;
-import com.solo.movinfo.data.network.models.MoviesResponse;
+import com.solo.movinfo.data.model.Movie;
+import com.solo.movinfo.data.network.responsemodels.MoviesResponse;
 import com.solo.movinfo.utils.Constants;
 
 import java.io.IOException;
@@ -54,7 +54,7 @@ public class MoviesListDataSource extends PageKeyedDataSource<Integer, Movie> {
                 Timber.e(new HttpException(movieResponse));
             } else {
                 callback.onResult(moviesResponse.getResults(), 0,
-                        Integer.parseInt(moviesResponse.getTotalPages()),
+                        Integer.parseInt(moviesResponse.getTotalResults()),
                         null, page + 1);
                 Timber.d("Response: %s", moviesResponse.getResults());
             }
@@ -87,11 +87,11 @@ public class MoviesListDataSource extends PageKeyedDataSource<Integer, Movie> {
         }
 
         try {
-            Response<MoviesResponse> movieResponse = call.execute();
+            Response<MoviesResponse> response = call.execute();
 
-            MoviesResponse moviesResponse = movieResponse.body();
+            MoviesResponse moviesResponse = response.body();
             if (moviesResponse == null) {
-                Timber.e(new HttpException(movieResponse));
+                Timber.e(new HttpException(response));
             } else {
                 Timber.d("Response: %s", moviesResponse.getResults());
                 callback.onResult(moviesResponse.getResults(), page + 1);

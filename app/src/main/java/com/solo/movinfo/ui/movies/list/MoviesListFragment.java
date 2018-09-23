@@ -51,7 +51,7 @@ public class MoviesListFragment extends Fragment implements
 
     private boolean firstLoad; // Used by connectivity receiver to avoid taking actions
     // if user is initially connected
-    
+
     private ConnectivityStateChangeReceiver mConnectivityStateChangeReceiver;
 
     @Nullable

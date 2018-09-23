@@ -5,7 +5,7 @@ import android.arch.lifecycle.MutableLiveData;
 import android.arch.paging.DataSource;
 
 import com.solo.movinfo.data.DataManager;
-import com.solo.movinfo.data.network.models.Movie;
+import com.solo.movinfo.data.model.Movie;
 
 public class MoviesListDataSourceFactory extends DataSource.Factory<Integer, Movie> {
 
