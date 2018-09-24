@@ -50,7 +50,7 @@ public class MovieReviewsDataSource extends PageKeyedDataSource<Integer, Review>
                         reviewsResponse.getTotalResults(),
                         null, page + 1);
             }
-        } catch (IOException e) {
+        } catch (IllegalStateException | IOException e) {
             Timber.e(e);
         }
     }
@@ -82,12 +82,12 @@ public class MovieReviewsDataSource extends PageKeyedDataSource<Integer, Review>
                 Timber.d("Response: %s", reviewsResponse.getReviews());
                 callback.onResult(reviewsResponse.getReviews(), page + 1);
             }
-        } catch (IOException e) {
+        } catch (IllegalStateException | IOException e) {
             Timber.e(e);
         }
     }
 
-    public void retry() {
+    void retry() {
         Executor executor = Executors.newFixedThreadPool(3);
         executor.execute(() -> loadAfter(mParams, mCallback));
     }
