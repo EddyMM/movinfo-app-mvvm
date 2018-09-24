@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
@@ -26,6 +27,7 @@ import com.solo.movinfo.R;
 import com.solo.movinfo.base.InternetAwareFragment;
 import com.solo.movinfo.data.model.Movie;
 import com.solo.movinfo.data.model.Review;
+import com.solo.movinfo.data.model.Video;
 import com.solo.movinfo.utils.Constants;
 import com.squareup.picasso.Picasso;
 
@@ -45,6 +47,10 @@ public class MoviesDetailFragment extends InternetAwareFragment {
 
     private MoviesDetailViewModel mMoviesDetailViewModel;
     private ReviewsAdapter mReviewsAdapter;
+    private TextView mReviewsLabelTextView;
+    private TextView mVideosLabelTextView;
+
+    private ProgressBar mMovieDetailsProgressBar;
 
     @Nullable
     @Override
@@ -65,7 +71,7 @@ public class MoviesDetailFragment extends InternetAwareFragment {
         }
 
         View v = inflater.inflate(R.layout.movies_detail_fragment, container, false);
-        setupUI(v, mMovie);
+        initUI(v, mMovie);
 
         setupViewModel();
 
@@ -81,24 +87,42 @@ public class MoviesDetailFragment extends InternetAwareFragment {
             mMoviesDetailViewModel = ViewModelProviders.of(this, movieDetailViewModelFactory)
                     .get(MoviesDetailViewModel.class);
 
+
             LiveData<PagedList<Review>> reviewsLiveData =
                     mMoviesDetailViewModel.getReviewsLiveData();
 
+            showProgressBar();
+
             reviewsLiveData.observe(this, (reviews) -> {
-                Timber.d("Reviews: %s", reviews);
-                mReviewsAdapter.submitList(reviews);
+                hideProgressBar();
+
+                if (reviews != null && reviews.size() > 0) {
+                    mReviewsLabelTextView.setVisibility(View.VISIBLE);
+                    Timber.d("Reviews: %s", reviews);
+                    mReviewsAdapter.submitList(reviews);
+                }
             });
+
+            LiveData<PagedList<Video>> videosLiveData = mMoviesDetailViewModel.getVideosLiveData();
+//            videosLiveData.observe(this, (videos) -> {
+//                if (videos != null && videos.size() > 0) {
+//                    mVideosLabelTextView.setVisibility(View.VISIBLE);
+//                }
+//            });
         }
     }
 
     /**
      * Binds UI with the mMovie data
      */
-    private void setupUI(View v, Movie movie) {
+    private void initUI(View v, Movie movie) {
         TextView movieTitleTextView = v.findViewById(R.id.movieDetailsTitleTextView);
         TextView movieSynopsisTextView = v.findViewById(R.id.movieSynopsisTextView);
         TextView releaseDateTextView = v.findViewById(R.id.releaseDateTextView);
         TextView voteAverageTextView = v.findViewById(R.id.voteAverageTextView);
+        mReviewsLabelTextView = v.findViewById(R.id.reviewsLabelTextView);
+        mVideosLabelTextView = v.findViewById(R.id.videosLabelTextView);
+        mMovieDetailsProgressBar = v.findViewById(R.id.movieDetailsProgressBar);
 
         ImageView moviePosterImageView = v.findViewById(R.id.movieDetailsPosterImageView);
         RatingBar voteAverageBar = v.findViewById(R.id.movieDetailsRatingBar);
@@ -137,13 +161,26 @@ public class MoviesDetailFragment extends InternetAwareFragment {
                 movieTitleTextView.setText(movie.getTitle());
             }
 
+
             // Attach an adapter
             mReviewsAdapter = new ReviewsAdapter(requireContext());
             reviewsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+            Timber.d("Was nested scrolling enabled: %s",
+                    releaseDateTextView.isNestedScrollingEnabled());
+            reviewsRecyclerView.setNestedScrollingEnabled(false);
             reviewsRecyclerView.setAdapter(mReviewsAdapter);
+
         } else {
             Log.w(TAG, "Movie in Details screen is null");
         }
+    }
+
+    private void hideProgressBar() {
+        mMovieDetailsProgressBar.setVisibility(View.GONE);
+    }
+
+    private void showProgressBar() {
+        mMovieDetailsProgressBar.setVisibility(View.VISIBLE);
     }
 
     @Override

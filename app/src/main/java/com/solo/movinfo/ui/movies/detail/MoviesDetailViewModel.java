@@ -10,7 +10,7 @@ import com.solo.movinfo.data.datasources.MovieReviewsDataSourceFactory;
 import com.solo.movinfo.data.model.Review;
 import com.solo.movinfo.data.model.Video;
 
-public class MoviesDetailViewModel extends ViewModel {
+class MoviesDetailViewModel extends ViewModel {
 
     private String mMovieId;
 
@@ -41,7 +41,7 @@ public class MoviesDetailViewModel extends ViewModel {
     }
 
 
-    public LiveData<PagedList<Video>> getVideosLiveData() {
+    LiveData<PagedList<Video>> getVideosLiveData() {
         return videosLiveData;
     }
 
