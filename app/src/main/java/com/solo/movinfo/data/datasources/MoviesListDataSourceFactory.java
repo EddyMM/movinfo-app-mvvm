@@ -1,7 +1,6 @@
 package com.solo.movinfo.data.datasources;
 
 
-import android.arch.lifecycle.MutableLiveData;
 import android.arch.paging.DataSource;
 
 import com.solo.movinfo.data.DataManager;
@@ -12,8 +11,6 @@ public class MoviesListDataSourceFactory extends DataSource.Factory<Integer, Mov
     private MoviesListDataSource mMoviesListDataSource;
     private DataManager mDataManager;
 
-    private MutableLiveData<MoviesListDataSource>
-            mMoviesDataSourceMutableLiveData = new MutableLiveData<>();
 
     public MoviesListDataSourceFactory(DataManager dataManager) {
         mDataManager = dataManager;
@@ -26,7 +23,7 @@ public class MoviesListDataSourceFactory extends DataSource.Factory<Integer, Mov
     @Override
     public DataSource<Integer, Movie> create() {
         mMoviesListDataSource = new MoviesListDataSource(mDataManager);
-        mMoviesDataSourceMutableLiveData.postValue(mMoviesListDataSource);
+
         return mMoviesListDataSource;
     }
 }

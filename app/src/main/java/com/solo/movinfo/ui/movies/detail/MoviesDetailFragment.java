@@ -3,16 +3,10 @@ package com.solo.movinfo.ui.movies.detail;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.ViewModelProviders;
 import android.arch.paging.PagedList;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -29,10 +23,10 @@ import android.widget.TextView;
 
 import com.solo.movinfo.BuildConfig;
 import com.solo.movinfo.R;
+import com.solo.movinfo.base.InternetAwareFragment;
 import com.solo.movinfo.data.model.Movie;
 import com.solo.movinfo.data.model.Review;
 import com.solo.movinfo.utils.Constants;
-import com.solo.movinfo.utils.NetworkUtils;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -40,23 +34,17 @@ import java.util.List;
 import timber.log.Timber;
 
 /**
- * @author eddy.
+ * Fragment to manage details about a specific movie
  */
 
-public class MoviesDetailFragment extends Fragment {
+public class MoviesDetailFragment extends InternetAwareFragment {
     private static final String TAG = MoviesDetailFragment.class.getSimpleName();
 
     private ActionBar mActionBar;
     private Movie mMovie;
 
     private MoviesDetailViewModel mMoviesDetailViewModel;
-    private ReviewsAdapter reviewsAdapter;
-    private Snackbar mInternetConnectionSnackbar;
-
-    private boolean firstLoad; // Used by connectivity receiver to avoid taking actions
-    // if user is initially connected
-
-    private ConnectivityStateChangeReceiver mConnectivityStateChangeReceiver;
+    private ReviewsAdapter mReviewsAdapter;
 
     @Nullable
     @Override
@@ -84,18 +72,6 @@ public class MoviesDetailFragment extends Fragment {
         return v;
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        registerConnectivityChangeReceiver();
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unregisterConnectivityChangeReceiver();
-    }
-
     private void setupViewModel() {
         if (mMovie != null) {
             MovieDetailViewModelFactory movieDetailViewModelFactory =
@@ -110,7 +86,7 @@ public class MoviesDetailFragment extends Fragment {
 
             reviewsLiveData.observe(this, (reviews) -> {
                 Timber.d("Reviews: %s", reviews);
-                reviewsAdapter.submitList(reviews);
+                mReviewsAdapter.submitList(reviews);
             });
         }
     }
@@ -145,7 +121,8 @@ public class MoviesDetailFragment extends Fragment {
             movieSynopsisTextView.setText(movie.getOverview());
 
             // Rating
-            float rating = 5 * (movie.getVoteAverage() / 10);
+            float rating = getResources().getInteger(R.integer.no_of_rating_stars) * (
+                    movie.getVoteAverage() / 10);
             voteAverageBar.setRating(rating);
 
             // Vote average
@@ -161,9 +138,9 @@ public class MoviesDetailFragment extends Fragment {
             }
 
             // Attach an adapter
-            reviewsAdapter = new ReviewsAdapter(requireContext());
+            mReviewsAdapter = new ReviewsAdapter(requireContext());
             reviewsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-            reviewsRecyclerView.setAdapter(reviewsAdapter);
+            reviewsRecyclerView.setAdapter(mReviewsAdapter);
         } else {
             Log.w(TAG, "Movie in Details screen is null");
         }
@@ -181,73 +158,19 @@ public class MoviesDetailFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
-    private void registerConnectivityChangeReceiver() {
-        firstLoad = true;
-
-        mConnectivityStateChangeReceiver = new ConnectivityStateChangeReceiver();
-
-        IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-        requireActivity().registerReceiver(mConnectivityStateChangeReceiver, intentFilter);
+    @Override
+    protected void onInternetConnectivityOff() {
     }
 
-    private void unregisterConnectivityChangeReceiver() {
-        requireActivity().unregisterReceiver(mConnectivityStateChangeReceiver);
-    }
-
-    private class ConnectivityStateChangeReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            boolean isConnected = NetworkUtils.isInternetConnected(requireContext());
-
-            if (!isConnected) {
-                Timber.d("Not Connected!");
-                showNotConnectedToInternet();
-            }
-
-            if (isConnected && !firstLoad) {
-                Timber.d("Connected!");
-                showConnectedToInternet();
-            }
-
-            firstLoad = false;
-        }
-
-        private void showConnectedToInternet() {
-            if (mInternetConnectionSnackbar != null && mInternetConnectionSnackbar.isShown()) {
-                mInternetConnectionSnackbar.dismiss();
-            }
-
-            mInternetConnectionSnackbar = Snackbar.make(
-                    requireActivity().findViewById(R.id.single_fragment),
-                    getString(R.string.connected_to_internet),
-                    Snackbar.LENGTH_SHORT);
-
-            mInternetConnectionSnackbar.getView()
-                    .setBackgroundColor(getResources().getColor(R.color.connectedColor));
-
-            mInternetConnectionSnackbar.show();
-
-            // Retry if initial load was done but otherwise fetch whole e.g. if on app start
-            // device was disconnected but user established a connection
-            List currentReviewsList = mMoviesDetailViewModel.getReviewsLiveData().getValue();
-            if (currentReviewsList != null && currentReviewsList.size() > 0) {
-                mMoviesDetailViewModel.retry();
-            } else {
-                mMoviesDetailViewModel.refreshReviewsList();
-            }
-        }
-
-        private void showNotConnectedToInternet() {
-            if (mInternetConnectionSnackbar != null && mInternetConnectionSnackbar.isShown()) {
-                mInternetConnectionSnackbar.dismiss();
-            }
-
-            mInternetConnectionSnackbar = Snackbar.make(
-                    requireActivity().findViewById(R.id.single_fragment),
-                    getString(R.string.no_internet_connection_message),
-                    Snackbar.LENGTH_INDEFINITE);
-            mInternetConnectionSnackbar.show();
+    @Override
+    protected void onInternetConnectivityOn() {
+        // Retry if initial load was done but otherwise fetch whole e.g. if on app start
+        // device was disconnected but user established a connection
+        List currentReviewsList = mMoviesDetailViewModel.getReviewsLiveData().getValue();
+        if (currentReviewsList != null && currentReviewsList.size() > 0) {
+            mMoviesDetailViewModel.retry();
+        } else {
+            mMoviesDetailViewModel.refreshReviewsList();
         }
     }
 }

@@ -12,6 +12,7 @@ import com.solo.movinfo.data.datasources.MoviesListDataSourceFactory;
 import com.solo.movinfo.data.model.Movie;
 import com.solo.movinfo.di.component.MoviesListSubComponent;
 import com.solo.movinfo.di.module.MoviesListModule;
+import com.solo.movinfo.utils.Constants;
 
 import javax.inject.Inject;
 
@@ -24,13 +25,7 @@ public class MoviesListViewModel extends AndroidViewModel {
 
     private LiveData<PagedList<Movie>> mMoviesLiveData;
 
-    LiveData<PagedList<Movie>> getMoviesLiveData() {
-        return mMoviesLiveData;
-    }
-
-
-    public MoviesListViewModel(
-            @NonNull Application application) {
+    public MoviesListViewModel(@NonNull Application application) {
         super(application);
 
         MoviesListSubComponent moviesListSubComponent = ((MovinfoApplication) application)
@@ -44,11 +39,15 @@ public class MoviesListViewModel extends AndroidViewModel {
         fetchMoviesLiveData();
     }
 
+    LiveData<PagedList<Movie>> getMoviesLiveData() {
+        return mMoviesLiveData;
+    }
+
     private void fetchMoviesLiveData() {
-        Timber.d("Loading movies from API");
+        Timber.i("Loading movies from API");
 
         PagedList.Config config = new PagedList.Config.Builder()
-                .setPageSize(20)
+                .setPageSize(Constants.MOVIES_LIST_PAGE_SIZE)
                 .setEnablePlaceholders(false)
                 .build();
 

@@ -19,6 +19,10 @@ public class Constants {
 
     public static final int MOVIES_LIST_NO_OF_COLUMNS = 2;
 
+    public static final int MOVIES_LIST_PAGE_SIZE = 20;
+
+    public static final int MOVIES_LIST_INITIAL_PAGE_NUMBER = 1;
+
     public static final String SORT_ORDER_KEY = "sort_order";
 
     public static final String POPULARITY_PREFERENCE = "popularity";
