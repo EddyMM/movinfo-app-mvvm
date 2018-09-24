@@ -4,10 +4,12 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.ViewModelProviders;
 import android.arch.paging.PagedList;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NavUtils;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -137,8 +139,10 @@ public class MoviesDetailFragment extends InternetAwareFragment {
                             + movie.getPosterPath()
                             + "?api_key=" + BuildConfig.TheMovieDbApiToken;
             Picasso.get().load(posterPath)
-                    .placeholder(R.drawable.ic_image_black_24dp)
-                    .error(R.drawable.ic_broken_image_black_24dp)
+                    .placeholder(DrawableCompat.wrap(requireContext().getResources().getDrawable(
+                            R.drawable.ic_image_black_24dp)))
+                    .error(DrawableCompat.wrap(requireContext().getResources().getDrawable(
+                            R.drawable.ic_broken_image_black_24dp)))
                     .into(moviePosterImageView);
 
             // Title
@@ -165,9 +169,12 @@ public class MoviesDetailFragment extends InternetAwareFragment {
             // Attach an adapter
             mReviewsAdapter = new ReviewsAdapter(requireContext());
             reviewsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-            Timber.d("Was nested scrolling enabled: %s",
-                    releaseDateTextView.isNestedScrollingEnabled());
-            reviewsRecyclerView.setNestedScrollingEnabled(false);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                Timber.d("Was nested scrolling enabled: %s",
+                        releaseDateTextView.isNestedScrollingEnabled());
+                reviewsRecyclerView.setNestedScrollingEnabled(false);
+            }
             reviewsRecyclerView.setAdapter(mReviewsAdapter);
 
         } else {

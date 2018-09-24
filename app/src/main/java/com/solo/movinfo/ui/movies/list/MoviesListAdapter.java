@@ -4,6 +4,8 @@ import android.arch.paging.PagedListAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -105,8 +107,10 @@ public class MoviesListAdapter extends
                                 + movie.getPosterPath()
                                 + "?api_key=" + BuildConfig.TheMovieDbApiToken;
                 Picasso.get().load(posterPath)
-                        .placeholder(R.drawable.ic_image_black_24dp)
-                        .error(R.drawable.ic_broken_image_black_24dp)
+                        .placeholder(DrawableCompat.wrap(mContext.getResources().getDrawable(
+                                R.drawable.ic_image_black_24dp)))
+                        .error(DrawableCompat.wrap(mContext.getResources().getDrawable(
+                                R.drawable.ic_broken_image_black_24dp)))
                         .into(moviePosterImageView);
 
                 // Title
