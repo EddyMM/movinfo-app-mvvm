@@ -28,6 +28,11 @@ public class Video {
     @SerializedName("type")
     private String type;
 
+    @Override
+    public String toString() {
+        return String.format("Videos[name=%s]", this.name);
+    }
+
     public String getId() {
         return id;
     }

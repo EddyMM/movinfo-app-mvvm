@@ -2,6 +2,7 @@ package com.solo.movinfo.data.network;
 
 import com.solo.movinfo.data.network.responsemodels.MoviesResponse;
 import com.solo.movinfo.data.network.responsemodels.ReviewsResponse;
+import com.solo.movinfo.data.network.responsemodels.VideosResponse;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -17,4 +18,7 @@ public interface MovieDbService {
 
     @GET("movie/{id}/reviews")
     Call<ReviewsResponse> getReviews(@Path("id") String id, @Query("page") int page);
+
+    @GET("movie/{id}/videos")
+    Call<VideosResponse> getVideos(@Path("id") String id);
 }

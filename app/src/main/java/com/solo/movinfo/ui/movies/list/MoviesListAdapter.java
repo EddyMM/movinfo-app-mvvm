@@ -4,7 +4,6 @@ import android.arch.paging.PagedListAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
@@ -62,31 +61,6 @@ public class MoviesListAdapter extends
             int position) {
         holder.bind(getItem(position));
     }
-
-//    @Override
-//    public int getItemCount() {
-//        int noOfMovies = 0;
-//
-//        if (mMovies != null) {
-//            noOfMovies = mMovies.size();
-//        }
-//
-//        return noOfMovies;
-//    }
-//
-//    public List<Movie> getMovies() {
-//        return mMovies;
-//    }
-//
-//    public void addMovies(List<Movie> movies) {
-//        mMovies = movies;
-//        notifyDataSetChanged();
-//    }
-//
-//    public void resetMoviesList() {
-//        mMovies.clear();
-//        notifyDataSetChanged();
-//    }
 
     class MoviesListViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 

@@ -49,6 +49,7 @@ public class MoviesDetailFragment extends InternetAwareFragment {
 
     private MoviesDetailViewModel mMoviesDetailViewModel;
     private ReviewsAdapter mReviewsAdapter;
+    private VideosAdapter mVideosAdapter;
     private TextView mReviewsLabelTextView;
     private TextView mVideosLabelTextView;
 
@@ -83,8 +84,7 @@ public class MoviesDetailFragment extends InternetAwareFragment {
     private void setupViewModel() {
         if (mMovie != null) {
             MovieDetailViewModelFactory movieDetailViewModelFactory =
-                    new MovieDetailViewModelFactory(
-                            mMovie.getMovieId());
+                    new MovieDetailViewModelFactory(mMovie.getMovieId(), requireContext());
 
             mMoviesDetailViewModel = ViewModelProviders.of(this, movieDetailViewModelFactory)
                     .get(MoviesDetailViewModel.class);
@@ -105,12 +105,14 @@ public class MoviesDetailFragment extends InternetAwareFragment {
                 }
             });
 
-            LiveData<PagedList<Video>> videosLiveData = mMoviesDetailViewModel.getVideosLiveData();
-//            videosLiveData.observe(this, (videos) -> {
-//                if (videos != null && videos.size() > 0) {
-//                    mVideosLabelTextView.setVisibility(View.VISIBLE);
-//                }
-//            });
+            LiveData<List<Video>> videosLiveData = mMoviesDetailViewModel.getVideosLiveData();
+            videosLiveData.observe(this, (videos) -> {
+                if (videos != null && videos.size() > 0) {
+                    mVideosLabelTextView.setVisibility(View.VISIBLE);
+                    mVideosAdapter.submitVideos(videos);
+                    Timber.d("Videos: %s" , videos);
+                }
+            });
         }
     }
 
@@ -130,6 +132,7 @@ public class MoviesDetailFragment extends InternetAwareFragment {
         RatingBar voteAverageBar = v.findViewById(R.id.movieDetailsRatingBar);
 
         RecyclerView reviewsRecyclerView = v.findViewById(R.id.reviewsRecyclerView);
+        RecyclerView videosRecyclerView = v.findViewById(R.id.videosRecyclerView);
 
         if (movie != null) {
             Log.d(TAG, "Showing mMovie: " + movie);
@@ -166,16 +169,20 @@ public class MoviesDetailFragment extends InternetAwareFragment {
             }
 
 
-            // Attach an adapter
+            // Attach reviews adapter
             mReviewsAdapter = new ReviewsAdapter(requireContext());
             reviewsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+            reviewsRecyclerView.setAdapter(mReviewsAdapter);
+
+            // Attach videos adapter
+            mVideosAdapter = new VideosAdapter(null, requireContext());
+            videosRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+            videosRecyclerView.setAdapter(mVideosAdapter);
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                Timber.d("Was nested scrolling enabled: %s",
-                        releaseDateTextView.isNestedScrollingEnabled());
                 reviewsRecyclerView.setNestedScrollingEnabled(false);
+                videosRecyclerView.setNestedScrollingEnabled(false);
             }
-            reviewsRecyclerView.setAdapter(mReviewsAdapter);
 
         } else {
             Log.w(TAG, "Movie in Details screen is null");

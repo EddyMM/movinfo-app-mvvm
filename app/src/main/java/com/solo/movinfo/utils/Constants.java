@@ -28,4 +28,10 @@ public class Constants {
     public static final String POPULARITY_PREFERENCE = "popularity";
 
     public static final String RATING_PREFERENCE = "rating";
+
+    public static final String YOUTUBE_SITE_NAME = "YouTube";
+
+    public static final String YOU_TUBE_BASE_WATCH_URL = "https://youtube.com/watch";
+
+    public static final String YOU_TUBE_BASE_WATCH_URL_VIDEO_KEY = "v";
 }

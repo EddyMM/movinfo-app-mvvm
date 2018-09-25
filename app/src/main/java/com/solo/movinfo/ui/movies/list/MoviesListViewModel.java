@@ -10,7 +10,7 @@ import android.support.annotation.NonNull;
 import com.solo.movinfo.MovinfoApplication;
 import com.solo.movinfo.data.datasources.MoviesListDataSourceFactory;
 import com.solo.movinfo.data.model.Movie;
-import com.solo.movinfo.di.component.MoviesListSubComponent;
+import com.solo.movinfo.di.component.MoviesSubComponent;
 import com.solo.movinfo.di.module.MoviesListModule;
 import com.solo.movinfo.utils.Constants;
 
@@ -28,13 +28,13 @@ public class MoviesListViewModel extends AndroidViewModel {
     public MoviesListViewModel(@NonNull Application application) {
         super(application);
 
-        MoviesListSubComponent moviesListSubComponent = ((MovinfoApplication) application)
+        MoviesSubComponent moviesSubComponent = ((MovinfoApplication) application)
                 .getApplicationComponent()
-                .moviesListSubComponentBuilder()
+                .moviesSubComponentBuilder()
                 .moviesListModule(new MoviesListModule())
                 .build();
 
-        moviesListSubComponent.inject(this);
+        moviesSubComponent.inject(this);
 
         fetchMoviesLiveData();
     }
