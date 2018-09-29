@@ -85,7 +85,7 @@ class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.VideosViewHolder>
 
             if (view.getId() == R.id.shareVideoImageView) {
                 Timber.d("Share YouTube URL");
-                shareVideoUrl(videoUrl, video.getName() + " video");
+                shareVideoUrl(videoUrl, video.getName());
             } else {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(videoUrl));
                 mContext.startActivity(Intent.createChooser(intent, "Watch video using"));
@@ -93,7 +93,7 @@ class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.VideosViewHolder>
         }
 
         private void shareVideoUrl(String url, String title) {
-            String mimeType = "text/plain";
+            String mimeType = Constants.PLAIN_TEXT_MIME_TYPE;
 
             ShareCompat.IntentBuilder
                     .from((MoviesDetailActivity) mContext)

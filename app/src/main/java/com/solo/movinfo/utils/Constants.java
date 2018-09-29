@@ -36,4 +36,6 @@ public class Constants {
     public static final String YOU_TUBE_BASE_WATCH_URL_VIDEO_KEY = "v";
     
     public static final String DB_NAME = "movies_db";
+
+    public static final String PLAIN_TEXT_MIME_TYPE = "text/plain";
 }
