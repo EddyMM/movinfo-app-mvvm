@@ -11,7 +11,7 @@ import com.solo.movinfo.data.DataManager;
 import com.solo.movinfo.data.preferences.AppPreferencesHelper;
 import com.solo.movinfo.data.preferences.PreferencesHelper;
 import com.solo.movinfo.di.component.ActivitySubComponent;
-import com.solo.movinfo.di.component.MoviesListSubComponent;
+import com.solo.movinfo.di.component.MoviesSubComponent;
 
 import javax.inject.Singleton;
 
@@ -19,7 +19,7 @@ import dagger.Module;
 import dagger.Provides;
 
 
-@Module(subcomponents = {MoviesListSubComponent.class, ActivitySubComponent.class})
+@Module(subcomponents = {MoviesSubComponent.class, ActivitySubComponent.class})
 public class ApplicationModule {
 
     private final Application mApplication;

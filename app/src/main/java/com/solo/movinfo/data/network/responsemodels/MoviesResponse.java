@@ -1,6 +1,7 @@
-package com.solo.movinfo.data.network.models;
+package com.solo.movinfo.data.network.responsemodels;
 
 import com.google.gson.annotations.SerializedName;
+import com.solo.movinfo.data.model.Movie;
 
 import java.util.List;
 

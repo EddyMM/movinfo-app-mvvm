@@ -1,11 +1,9 @@
 package com.solo.movinfo.data;
 
 
-import android.arch.lifecycle.LiveData;
+import com.solo.movinfo.data.network.responsemodels.VideosResponse;
 
-import com.solo.movinfo.data.network.models.Movie;
-
-import java.util.List;
+import retrofit2.Callback;
 
 public interface DataManager {
 
@@ -16,5 +14,7 @@ public interface DataManager {
     void setSortCriteria(String sortCriteria);
 
     String getSortCriteria();
+
+    void loadVideos(int movieId, Callback<VideosResponse> videosCallback);
 
 }

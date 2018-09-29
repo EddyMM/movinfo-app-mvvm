@@ -26,4 +26,11 @@
     <string name="popular_movies_title">Popular movies</string>
     <string name="top_rated_movies_title">Top Rated Movies</string>
     <string name="connected_to_internet">Connected to the Internet</string>
+    <string name="videos_label">Videos</string>
+    <string name="reviews_label">Reviews</string>
+    <string name="video_icon_description">Video Icon</string>
+    <string name="favorite">Favorite button</string>
+    <string name="sort_by_favorites_label">Favorites</string>
+    <string name="favorite_movies_title">Favorites</string>
+    <string name="share_video_description">share video</string>
 </resources>

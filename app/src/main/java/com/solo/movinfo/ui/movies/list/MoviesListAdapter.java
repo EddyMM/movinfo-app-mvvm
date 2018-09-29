@@ -4,6 +4,7 @@ import android.arch.paging.PagedListAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -15,7 +16,7 @@ import android.widget.TextView;
 
 import com.solo.movinfo.BuildConfig;
 import com.solo.movinfo.R;
-import com.solo.movinfo.data.network.models.Movie;
+import com.solo.movinfo.data.model.Movie;
 import com.solo.movinfo.ui.movies.detail.MoviesDetailActivity;
 import com.solo.movinfo.utils.Constants;
 import com.squareup.picasso.Picasso;
@@ -61,31 +62,6 @@ public class MoviesListAdapter extends
         holder.bind(getItem(position));
     }
 
-//    @Override
-//    public int getItemCount() {
-//        int noOfMovies = 0;
-//
-//        if (mMovies != null) {
-//            noOfMovies = mMovies.size();
-//        }
-//
-//        return noOfMovies;
-//    }
-//
-//    public List<Movie> getMovies() {
-//        return mMovies;
-//    }
-//
-//    public void addMovies(List<Movie> movies) {
-//        mMovies = movies;
-//        notifyDataSetChanged();
-//    }
-//
-//    public void resetMoviesList() {
-//        mMovies.clear();
-//        notifyDataSetChanged();
-//    }
-
     class MoviesListViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         MoviesListViewHolder(View itemView) {
@@ -105,8 +81,10 @@ public class MoviesListAdapter extends
                                 + movie.getPosterPath()
                                 + "?api_key=" + BuildConfig.TheMovieDbApiToken;
                 Picasso.get().load(posterPath)
-                        .placeholder(R.drawable.ic_image_black_24dp)
-                        .error(R.drawable.ic_broken_image_black_24dp)
+                        .placeholder(DrawableCompat.wrap(mContext.getResources().getDrawable(
+                                R.drawable.ic_image_black_24dp)))
+                        .error(DrawableCompat.wrap(mContext.getResources().getDrawable(
+                                R.drawable.ic_broken_image_black_24dp)))
                         .into(moviePosterImageView);
 
                 // Title

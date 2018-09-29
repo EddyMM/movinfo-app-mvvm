@@ -1,7 +1,8 @@
 package com.solo.movinfo.di.module;
 
-import com.solo.movinfo.data.DataManager;
-import com.solo.movinfo.data.datasources.MoviesListDataSourceFactory;
+import android.content.Context;
+
+import com.solo.movinfo.data.db.MoviesDatabase;
 
 import dagger.Module;
 import dagger.Provides;
@@ -10,8 +11,8 @@ import dagger.Provides;
 public class MoviesListModule {
 
     @Provides
-    MoviesListDataSourceFactory provideMoviesListDataSourceFactory(DataManager dataManager) {
-        return new MoviesListDataSourceFactory(dataManager);
+    MoviesDatabase provideMoviesDatabase(Context context) {
+        return MoviesDatabase.getInstance(context);
     }
 
 }

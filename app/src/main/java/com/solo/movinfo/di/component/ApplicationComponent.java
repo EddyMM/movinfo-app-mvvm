@@ -16,7 +16,7 @@ public interface ApplicationComponent {
 
     void inject(PreferencesHelper preferencesHelper);
 
-    MoviesListSubComponent.Builder moviesListSubComponentBuilder();
+    MoviesSubComponent.Builder moviesSubComponentBuilder();
 
     ActivitySubComponent.Builder activitySubComponentBuilder();
 }

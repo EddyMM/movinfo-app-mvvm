@@ -1,6 +1,7 @@
 package com.solo.movinfo;
 
 import android.app.Application;
+import android.support.v7.app.AppCompatDelegate;
 
 import com.solo.movinfo.di.component.ApplicationComponent;
 import com.solo.movinfo.di.component.DaggerApplicationComponent;
@@ -23,6 +24,8 @@ public class MovinfoApplication extends Application {
                 .build();
 
         mApplicationComponent.inject(this);
+
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
     }
 
     private void initTimberLogging() {

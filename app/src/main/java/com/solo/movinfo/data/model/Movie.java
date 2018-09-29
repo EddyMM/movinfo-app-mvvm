@@ -1,63 +1,82 @@
-package com.solo.movinfo.data.network.models;
+package com.solo.movinfo.data.model;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.PrimaryKey;
+import android.arch.persistence.room.TypeConverters;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 
 import com.google.gson.annotations.SerializedName;
+import com.solo.movinfo.data.db.DateConverter;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+@Entity(tableName = "movie")
+@TypeConverters(DateConverter.class)
 public class Movie implements Parcelable {
-    @SerializedName("poster_url")
-    private String posterUrl;
-    @SerializedName("vote_count")
-    private int voteCount;
-    @SerializedName("id")
-    private String movieId;
-    @SerializedName("vote_average")
-    private float voteAverage;
-    @SerializedName("title")
-    private String title;
-    @SerializedName("popularity")
-    private float popularity;
-    @SerializedName("poster_path")
-    private String posterPath;
-    @SerializedName("original_language")
-    private String originalLanguage;
-    @SerializedName("original_title")
-    private String originalTitle;
-    @SerializedName("genre_ids")
-    private ArrayList<String> genreIds;
-    @SerializedName("backdrop_path")
-    private String backdropPath;
-    @SerializedName("adult")
-    private boolean adult;
-    @SerializedName("overview")
-    private String overview;
-    @SerializedName("release_date")
-    private Date releaseDate;
 
-    public Movie(String posterUrl, int voteCount, String movieId, float voteAverage,
-            String title, float popularity, String posterPath, String originalLanguage,
-            String originalTitle, ArrayList<String> genreIds, String backdropPath, boolean adult,
-            String overview, Date releaseDate) {
-        this.posterUrl = posterUrl;
-        this.voteCount = voteCount;
-        this.movieId = movieId;
-        this.voteAverage = voteAverage;
-        this.title = title;
-        this.popularity = popularity;
-        this.posterPath = posterPath;
-        this.originalLanguage = originalLanguage;
-        this.originalTitle = originalTitle;
-        this.genreIds = genreIds;
-        this.backdropPath = backdropPath;
-        this.adult = adult;
-        this.overview = overview;
-        this.releaseDate = releaseDate;
-    }
+    @SerializedName("id")
+    @ColumnInfo(name = "id")
+    @PrimaryKey
+    @NonNull
+    private Integer movieId;
+
+    @SerializedName("poster_url")
+    @ColumnInfo(name = "poster_url")
+    private String posterUrl;
+
+    @SerializedName("vote_count")
+    @ColumnInfo(name = "vote_count")
+    private int voteCount;
+
+    @SerializedName("vote_average")
+    @ColumnInfo(name = "vote_average")
+    private float voteAverage;
+
+    @SerializedName("title")
+    @ColumnInfo(name = "title")
+    private String title;
+
+    @SerializedName("popularity")
+    @ColumnInfo(name = "popularity")
+    private float popularity;
+
+    @SerializedName("poster_path")
+    @ColumnInfo(name = "poster_path")
+    private String posterPath;
+
+    @SerializedName("original_language")
+    @ColumnInfo(name = "original_language")
+    private String originalLanguage;
+
+    @SerializedName("original_title")
+    @ColumnInfo(name = "original_title")
+    private String originalTitle;
+
+    @SerializedName("genre_ids")
+    @Ignore
+    private ArrayList<String> genreIds;
+
+    @SerializedName("backdrop_path")
+    @ColumnInfo(name = "backdrop_path")
+    private String backdropPath;
+
+    @SerializedName("adult")
+    @ColumnInfo(name = "adult")
+    private boolean adult;
+
+    @SerializedName("overview")
+    @ColumnInfo(name = "overview")
+    private String overview;
+
+    @SerializedName("release_date")
+    @ColumnInfo(name = "release_date")
+    private Date releaseDate;
 
     @Override
     public String toString() {
@@ -65,6 +84,9 @@ public class Movie implements Parcelable {
                 "voteAverage=" + voteAverage +
                 ", title='" + title + '\'' +
                 '}';
+    }
+
+    public Movie() {
     }
 
     public String getPosterUrl() {
@@ -75,7 +97,8 @@ public class Movie implements Parcelable {
         return voteCount;
     }
 
-    public String getMovieId() {
+    @NonNull
+    public Integer getMovieId() {
         return movieId;
     }
 
@@ -132,7 +155,7 @@ public class Movie implements Parcelable {
     private Movie(Parcel in) {
         posterUrl = in.readString();
         voteCount = in.readInt();
-        movieId = in.readString();
+        movieId = in.readInt();
         voteAverage = in.readFloat();
         title = in.readString();
         popularity = in.readFloat();
@@ -152,6 +175,62 @@ public class Movie implements Parcelable {
         releaseDate = tmpReleaseDate != -1 ? new Date(tmpReleaseDate) : null;
     }
 
+    public void setPosterUrl(String posterUrl) {
+        this.posterUrl = posterUrl;
+    }
+
+    public void setVoteCount(int voteCount) {
+        this.voteCount = voteCount;
+    }
+
+    public void setMovieId(@NonNull Integer movieId) {
+        this.movieId = movieId;
+    }
+
+    public void setVoteAverage(float voteAverage) {
+        this.voteAverage = voteAverage;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setPopularity(float popularity) {
+        this.popularity = popularity;
+    }
+
+    public void setPosterPath(String posterPath) {
+        this.posterPath = posterPath;
+    }
+
+    public void setOriginalLanguage(String originalLanguage) {
+        this.originalLanguage = originalLanguage;
+    }
+
+    public void setOriginalTitle(String originalTitle) {
+        this.originalTitle = originalTitle;
+    }
+
+    public void setGenreIds(ArrayList<String> genreIds) {
+        this.genreIds = genreIds;
+    }
+
+    public void setBackdropPath(String backdropPath) {
+        this.backdropPath = backdropPath;
+    }
+
+    public void setAdult(boolean adult) {
+        this.adult = adult;
+    }
+
+    public void setOverview(String overview) {
+        this.overview = overview;
+    }
+
+    public void setReleaseDate(Date releaseDate) {
+        this.releaseDate = releaseDate;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -161,7 +240,7 @@ public class Movie implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(posterUrl);
         dest.writeInt(voteCount);
-        dest.writeString(movieId);
+        dest.writeInt(movieId);
         dest.writeFloat(voteAverage);
         dest.writeString(title);
         dest.writeFloat(popularity);

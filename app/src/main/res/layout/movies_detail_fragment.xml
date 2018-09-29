@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.support.constraint.ConstraintLayout
+    <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -14,7 +16,7 @@
         <ImageView
             android:id="@+id/movieDetailsPosterImageView"
             android:layout_width="match_parent"
-            android:layout_height="271dp"
+            android:layout_height="248dp"
             android:contentDescription="@string/movie_poster_description"
             android:scaleType="centerCrop"
             app:layout_collapseMode="parallax"
@@ -25,15 +27,14 @@
         <TextView
             android:id="@+id/movieDetailsTitleTextView"
             style="@style/AppTheme.MovieDetailsTitle"
-            android:layout_width="match_parent"
+            android:layout_width="294dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/movieDetailsPosterImageView"
-            tools:text="MOVIE TITLE" />
+            tools:text="MOVIE TITLE"
+            android:layout_marginLeft="8dp" />
 
         <TextView
             android:id="@+id/voteAverageLabelTextView"
@@ -51,12 +52,12 @@
             style="@style/AppTheme.MovieDetailsValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="24dp"
             app:layout_constraintStart_toEndOf="@+id/movieDetailsRatingBar"
             app:layout_constraintTop_toBottomOf="@+id/movieDetailsTitleTextView"
-            tools:text="vote average"
-            android:layout_marginLeft="8dp" />
+            tools:text="vote average" />
 
         <TextView
             android:id="@+id/releaseDateLabelTextView"
@@ -84,7 +85,7 @@
         <TextView
             android:id="@+id/synopsisLabelTextView"
             style="@style/AppTheme.MovieDetailsLabel"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
             android:layout_marginStart="8dp"
@@ -112,14 +113,87 @@
             style="@style/Widget.AppCompat.RatingBar.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="24dp"
             android:isIndicator="true"
             android:max="5"
             app:layout_constraintStart_toEndOf="@+id/voteAverageLabelTextView"
-            app:layout_constraintTop_toBottomOf="@+id/movieDetailsTitleTextView"
-            android:layout_marginLeft="8dp" />
+            app:layout_constraintTop_toBottomOf="@+id/movieDetailsTitleTextView" />
+
+        <TextView
+            android:id="@+id/videosLabelTextView"
+            style="@style/AppTheme.MovieDetailsLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/videos_label"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/movieSynopsisTextView" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/videosRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/videosLabelTextView" />
+
+        <TextView
+            android:id="@+id/reviewsLabelTextView"
+            style="@style/AppTheme.MovieDetailsLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/reviews_label"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/videosRecyclerView" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/reviewsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/reviewsLabelTextView" />
+
+        <ProgressBar
+            android:id="@+id/movieDetailsProgressBar"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="40dp"
+            android:layout_marginStart="40dp"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/reviewsRecyclerView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/favoriteImageView"
+            android:layout_width="37dp"
+            android:layout_height="29dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:contentDescription="@string/favorite"
+            app:layout_constraintBottom_toBottomOf="@+id/movieDetailsTitleTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/movieDetailsTitleTextView"
+            app:layout_constraintTop_toTopOf="@+id/movieDetailsTitleTextView"
+            app:srcCompat="@drawable/ic_star_border_black_24dp" />
 
 
     </android.support.constraint.ConstraintLayout>
-</ScrollView>
+
+</android.support.v4.widget.NestedScrollView>

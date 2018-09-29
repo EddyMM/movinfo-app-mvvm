@@ -1,18 +1,13 @@
 package com.solo.movinfo.ui.movies.list;
 
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
+import android.arch.paging.PagedList;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -24,9 +19,11 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.solo.movinfo.R;
+import com.solo.movinfo.base.InternetAwareFragment;
 import com.solo.movinfo.data.DataManager;
+import com.solo.movinfo.data.model.Movie;
+import com.solo.movinfo.viewmodel.MoviesListViewModel;
 import com.solo.movinfo.utils.Constants;
-import com.solo.movinfo.utils.NetworkUtils;
 
 import java.util.List;
 
@@ -38,7 +35,7 @@ import timber.log.Timber;
  * Fragment to host and manage movies list
  */
 
-public class MoviesListFragment extends Fragment implements
+public class MoviesListFragment extends InternetAwareFragment implements
         SharedPreferences.OnSharedPreferenceChangeListener {
     @Inject
     DataManager mDataManager;
@@ -46,13 +43,11 @@ public class MoviesListFragment extends Fragment implements
     private RecyclerView mMoviesRecyclerView;
     private ProgressBar mMoviesListProgressBar;
     private MoviesListAdapter mMoviesListAdapter;
-    private MoviesListViewModel moviesListViewModel;
-    private Snackbar mInternetConnectionSnackbar;
 
-    private boolean firstLoad; // Used by connectivity receiver to avoid taking actions
-    // if user is initially connected
-    
-    private ConnectivityStateChangeReceiver mConnectivityStateChangeReceiver;
+    private MoviesListViewModel moviesListViewModel;
+
+    private MoviesListObserver mMoviesListObserver = new MoviesListObserver();
+
 
     @Nullable
     @Override
@@ -63,6 +58,7 @@ public class MoviesListFragment extends Fragment implements
 
         ((MoviesListActivity) requireActivity()).getActivitySubComponent().inject(this);
 
+        // Ensure user sees splash screen once per install after opening the movies list
         if (!mDataManager.wasSplashScreenSeen()) {
             mDataManager.setSplashScreenSeenByUser();
         }
@@ -71,7 +67,7 @@ public class MoviesListFragment extends Fragment implements
 
         initUI(view);
 
-        // Read preferences and load UI accordingly
+        // Register as listener for any changes in shared preferences
         setupSharedPreferences();
 
         setupViewModel();
@@ -80,15 +76,12 @@ public class MoviesListFragment extends Fragment implements
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        registerConnectivityChangeReceiver();
-    }
+    public void onDestroy() {
+        super.onDestroy();
+        SharedPreferences sharedPreferences = PreferenceManager.
+                getDefaultSharedPreferences(requireContext());
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unregisterConnectivityChangeReceiver();
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -103,29 +96,29 @@ public class MoviesListFragment extends Fragment implements
             Timber.d("Sort by popularity");
             mDataManager.setSortCriteria(Constants.POPULARITY_PREFERENCE);
             return true;
-        } else if ((item.getItemId() == R.id.movies_list_rating_menu_item)) {
+        } else if (item.getItemId() == R.id.movies_list_rating_menu_item) {
             Timber.d("Sort by rating");
             mDataManager.setSortCriteria(Constants.RATING_PREFERENCE);
+            return true;
+        } else if (item.getItemId() == R.id.movies_list_favorites_menu_item) {
+            Timber.d("Sort by favorites");
+            mDataManager.setSortCriteria(Constants.FAVORITES_PREFERENCE);
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        SharedPreferences sharedPreferences = PreferenceManager.
-                getDefaultSharedPreferences(requireContext());
-
-        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+    private void removeAllObservers() {
+        moviesListViewModel.getFavoriteMoviesLiveData().removeObservers(this);
+        moviesListViewModel.getPopularMoviesLiveData().removeObservers(this);
+        moviesListViewModel.getTopRatedMoviesLiveData().removeObservers(this);
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals(getString(R.string.sort_order_key))) {
             Timber.d("Detected a change in preferences to: %s", mDataManager.getSortCriteria());
-
             refresh();
         }
     }
@@ -150,18 +143,18 @@ public class MoviesListFragment extends Fragment implements
 
         moviesListViewModel = ViewModelProviders.of(this).get(
                 MoviesListViewModel.class);
-        moviesListViewModel.getMoviesLiveData().observe(this, movies -> {
-            if (movies != null) {
-                Timber.d("Adding list to adapter");
-                mMoviesListAdapter.submitList(movies);
-            } else {
-                Timber.d("No movies fetched");
-            }
 
-            hideProgressBar();
-            setMoviesListTitle();
-            showList();
-        });
+        attachMoviesListLiveData();
+    }
+
+    private void attachMoviesListLiveData() {
+        if (mDataManager.getSortCriteria().equals(Constants.RATING_PREFERENCE)) {
+            moviesListViewModel.getTopRatedMoviesLiveData().observe(this, mMoviesListObserver);
+        } else if (mDataManager.getSortCriteria().equals(Constants.FAVORITES_PREFERENCE)) {
+            moviesListViewModel.getFavoriteMoviesLiveData().observe(this, mMoviesListObserver);
+        } else {
+            moviesListViewModel.getPopularMoviesLiveData().observe(this, mMoviesListObserver);
+        }
     }
 
     /**
@@ -179,6 +172,8 @@ public class MoviesListFragment extends Fragment implements
     private void setMoviesListTitle() {
         if (mDataManager.getSortCriteria().equals(Constants.RATING_PREFERENCE)) {
             requireActivity().setTitle(getString(R.string.top_rated_movies_title));
+        } else if (mDataManager.getSortCriteria().equals(Constants.FAVORITES_PREFERENCE)) {
+            requireActivity().setTitle(getString(R.string.favorite_movies_title));
         } else {
             requireActivity().setTitle(getString(R.string.popular_movies_title));
         }
@@ -201,79 +196,45 @@ public class MoviesListFragment extends Fragment implements
     }
 
     private void refresh() {
+        removeAllObservers();
+
         hideList();
         showProgressBar();
 
-        moviesListViewModel.refreshMoviesList();
+        attachMoviesListLiveData();
     }
 
-    private void registerConnectivityChangeReceiver() {
-        firstLoad = true;
+    @Override
+    protected void onInternetConnectivityOff() {}
 
-        mConnectivityStateChangeReceiver = new ConnectivityStateChangeReceiver();
-
-        IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-        requireActivity().registerReceiver(mConnectivityStateChangeReceiver, intentFilter);
+    /**
+     * If part of the list was already loaded, it attempts to continue loading the rest
+     * If movies list was not loaded at all, it attempts to fetch the whole list
+     */
+    @Override
+    protected void onInternetConnectivityOn() {
+        List currentMoviesList = mMoviesListAdapter.getCurrentList();
+        if (currentMoviesList != null && currentMoviesList.size() > 0) {
+            Timber.d("Retrying movies list fetch");
+            moviesListViewModel.continueLoadingAfterInterruption();
+        } else {
+            refresh();
+        }
     }
 
-    private void unregisterConnectivityChangeReceiver() {
-        requireActivity().unregisterReceiver(mConnectivityStateChangeReceiver);
-    }
-
-    private class ConnectivityStateChangeReceiver extends BroadcastReceiver {
-
+    class MoviesListObserver implements Observer<PagedList<Movie>> {
         @Override
-        public void onReceive(Context context, Intent intent) {
-            boolean isConnected = NetworkUtils.isInternetConnected(requireContext());
-
-            if (!isConnected) {
-                Timber.d("Not Connected!");
-                showNotConnectedToInternet();
-            }
-
-            if (isConnected && !firstLoad) {
-                Timber.d("Connected!");
-                showConnectedToInternet();
-            }
-
-            firstLoad = false;
-        }
-
-        private void showConnectedToInternet() {
-            if (mInternetConnectionSnackbar != null && mInternetConnectionSnackbar.isShown()) {
-                mInternetConnectionSnackbar.dismiss();
-            }
-
-            mInternetConnectionSnackbar = Snackbar.make(
-                    requireActivity().findViewById(R.id.single_fragment),
-                    getString(R.string.connected_to_internet),
-                    Snackbar.LENGTH_SHORT);
-
-            mInternetConnectionSnackbar.getView()
-                    .setBackgroundColor(getResources().getColor(R.color.connectedColor));
-
-            mInternetConnectionSnackbar.show();
-
-            // Retry if initial load was done but otherwise fetch whole e.g. if on app start
-            // device was disconnected but user established a connection
-            List currentMoviesList = moviesListViewModel.getMoviesLiveData().getValue();
-            if (currentMoviesList!= null && currentMoviesList.size() > 0) {
-                moviesListViewModel.retry();
+        public void onChanged(@Nullable PagedList<Movie> movies) {
+            if (movies != null) {
+                Timber.i("Adding movies list to adapter");
+                mMoviesListAdapter.submitList(movies);
             } else {
-                moviesListViewModel.refreshMoviesList();
-            }
-        }
-
-        private void showNotConnectedToInternet() {
-            if (mInternetConnectionSnackbar != null && mInternetConnectionSnackbar.isShown()) {
-                mInternetConnectionSnackbar.dismiss();
+                Timber.i("No movies fetched");
             }
 
-            mInternetConnectionSnackbar = Snackbar.make(
-                    requireActivity().findViewById(R.id.single_fragment),
-                    getString(R.string.no_internet_connection_message),
-                    Snackbar.LENGTH_INDEFINITE);
-            mInternetConnectionSnackbar.show();
+            hideProgressBar();
+            setMoviesListTitle();
+            showList();
         }
     }
 }
