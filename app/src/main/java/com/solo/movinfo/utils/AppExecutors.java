@@ -1,4 +1,4 @@
-package com.solo.movinfo;
+package com.solo.movinfo.utils;
 
 
 import android.os.Handler;

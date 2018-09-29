@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.constraint.Group;
+import android.support.v4.app.ShareCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +18,8 @@ import com.solo.movinfo.data.model.Video;
 import com.solo.movinfo.utils.Constants;
 
 import java.util.List;
+
+import timber.log.Timber;
 
 class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.VideosViewHolder> {
     private List<Video> mVideoList;
@@ -55,7 +59,11 @@ class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.VideosViewHolder>
 
         VideosViewHolder(View itemView) {
             super(itemView);
-            itemView.setOnClickListener(this);
+            Group videoGroup = itemView.findViewById(R.id.videoGroup);
+
+            for (int id : videoGroup.getReferencedIds()) {
+                itemView.findViewById(id).setOnClickListener(this);
+            }
         }
 
         void bind(Video video) {
@@ -75,8 +83,24 @@ class VideosAdapter extends RecyclerView.Adapter<VideosAdapter.VideosViewHolder>
             String videoUrl = Constants.YOU_TUBE_BASE_WATCH_URL + "?"
                     + Constants.YOU_TUBE_BASE_WATCH_URL_VIDEO_KEY + "=" + video.getKey();
 
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(videoUrl));
-            mContext.startActivity(Intent.createChooser(intent, "Watch video using"));
+            if (view.getId() == R.id.shareVideoImageView) {
+                Timber.d("Share YouTube URL");
+                shareVideoUrl(videoUrl, video.getName() + " video");
+            } else {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(videoUrl));
+                mContext.startActivity(Intent.createChooser(intent, "Watch video using"));
+            }
+        }
+
+        private void shareVideoUrl(String url, String title) {
+            String mimeType = "text/plain";
+
+            ShareCompat.IntentBuilder
+                    .from((MoviesDetailActivity) mContext)
+                    .setType(mimeType)
+                    .setChooserTitle(title)
+                    .setText(url)
+                    .startChooser();
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.solo.movinfo.ui.movies.list;
+package com.solo.movinfo.viewmodel;
 
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
@@ -51,15 +51,15 @@ public class MoviesListViewModel extends AndroidViewModel {
         fetchMoviesLiveData();
     }
 
-    LiveData<PagedList<Movie>> getPopularMoviesLiveData() {
+    public LiveData<PagedList<Movie>> getPopularMoviesLiveData() {
         return mPopularMoviesLiveData;
     }
 
-    LiveData<PagedList<Movie>> getTopRatedMoviesLiveData() {
+    public LiveData<PagedList<Movie>> getTopRatedMoviesLiveData() {
         return mTopRatedMoviesLiveData;
     }
 
-    LiveData<PagedList<Movie>> getFavoriteMoviesLiveData() {
+    public LiveData<PagedList<Movie>> getFavoriteMoviesLiveData() {
         return mFavoriteMoviesLiveData;
     }
 
@@ -87,7 +87,7 @@ public class MoviesListViewModel extends AndroidViewModel {
     }
 
 
-    void continueLoadingAfterInterruption() {
+    public void continueLoadingAfterInterruption() {
         if (mDataManager.getSortCriteria().equals(Constants.POPULARITY_PREFERENCE)) {
             ((PagedMoviesDataSource) mPopularMoviesDataSourceFactory.dataSource()).retry();
         } else if (mDataManager.getSortCriteria().equals(Constants.RATING_PREFERENCE)) {

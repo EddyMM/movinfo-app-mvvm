@@ -1,4 +1,4 @@
-package com.solo.movinfo.ui.movies.detail;
+package com.solo.movinfo.viewmodel;
 
 
 import android.arch.lifecycle.LiveData;
@@ -10,7 +10,7 @@ import android.arch.paging.PagedList;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import com.solo.movinfo.AppExecutors;
+import com.solo.movinfo.utils.AppExecutors;
 import com.solo.movinfo.MovinfoApplication;
 import com.solo.movinfo.data.DataManager;
 import com.solo.movinfo.data.db.MoviesDatabase;
@@ -106,23 +106,23 @@ public class MoviesDetailViewModel extends ViewModel {
         mDataManager.loadVideos(mMovieId, videosResponseCallback);
     }
 
-    LiveData<List<Video>> getVideosLiveData() {
+    public LiveData<List<Video>> getVideosLiveData() {
         return mVideosLiveData;
     }
 
-    LiveData<PagedList<Review>> getReviewsLiveData() {
+    public LiveData<PagedList<Review>> getReviewsLiveData() {
         return mReviewsLiveData;
     }
 
-    LiveData<Movie> getCurrentFavoriteMovieLiveData() {
+    public LiveData<Movie> getCurrentFavoriteMovieLiveData() {
         return mCurrentFavoriteMovieLiveData;
     }
 
-    void retry() {
+    public void retry() {
         mMovieReviewsDataSourceFactory.retry();
     }
 
-    void refreshReviewsList() {
+    public void refreshReviewsList() {
         DataSource reviewsDataSource = mMovieReviewsDataSourceFactory.getMovieReviewsDataSource();
         if (reviewsDataSource != null) {
             reviewsDataSource.invalidate();
@@ -130,7 +130,7 @@ public class MoviesDetailViewModel extends ViewModel {
     }
 
 
-    void addOrRemoveFromFavorites(Context context, Movie movie) {
+    public void addOrRemoveFromFavorites(Context context, Movie movie) {
         if (mCurrentFavoriteMovieLiveData.getValue() == null) {
             AppExecutors.getInstance().diskIO().execute(() ->
                     MoviesDatabase.getInstance(context)

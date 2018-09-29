@@ -1,12 +1,10 @@
-package com.solo.movinfo.ui.movies.detail;
+package com.solo.movinfo.viewmodel;
 
 
 import android.arch.lifecycle.ViewModel;
 import android.arch.lifecycle.ViewModelProvider;
 import android.content.Context;
 import android.support.annotation.NonNull;
-
-import javax.inject.Inject;
 
 public class MovieDetailViewModelFactory extends ViewModelProvider.NewInstanceFactory {
 

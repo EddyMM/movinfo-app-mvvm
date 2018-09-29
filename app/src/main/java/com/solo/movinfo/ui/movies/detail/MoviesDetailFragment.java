@@ -24,7 +24,7 @@ import android.widget.ProgressBar;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
-import com.solo.movinfo.AppExecutors;
+import com.solo.movinfo.utils.AppExecutors;
 import com.solo.movinfo.BuildConfig;
 import com.solo.movinfo.R;
 import com.solo.movinfo.base.InternetAwareFragment;
@@ -32,6 +32,8 @@ import com.solo.movinfo.data.db.MoviesDatabase;
 import com.solo.movinfo.data.model.Movie;
 import com.solo.movinfo.data.model.Review;
 import com.solo.movinfo.data.model.Video;
+import com.solo.movinfo.viewmodel.MovieDetailViewModelFactory;
+import com.solo.movinfo.viewmodel.MoviesDetailViewModel;
 import com.solo.movinfo.utils.Constants;
 import com.squareup.picasso.Picasso;
 

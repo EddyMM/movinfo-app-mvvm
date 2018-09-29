@@ -22,6 +22,7 @@ import com.solo.movinfo.R;
 import com.solo.movinfo.base.InternetAwareFragment;
 import com.solo.movinfo.data.DataManager;
 import com.solo.movinfo.data.model.Movie;
+import com.solo.movinfo.viewmodel.MoviesListViewModel;
 import com.solo.movinfo.utils.Constants;
 
 import java.util.List;
