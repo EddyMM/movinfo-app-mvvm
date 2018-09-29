@@ -3,9 +3,8 @@
 An android application to discover the currently popular movies.
 APK can be found [here](https://github.com/EddyMM/movinfo-app-mvvm/releases)
 
-<img src="github_assets/imgs/splash_screen.png" alt="Movie list screen" width=250 height=450 />  <img src="github_assets/imgs/popular_movies_screen.png" alt="Movie list screen" width=250 height=450 />  
-<img src="github_assets/imgs/top_rated_movies_screen.png" alt="Movie list screen" width=250 height=450 />  <img src="github_assets/imgs/example_detail_screen.png" alt="Movie list screen" width=250 height=450 />
-<img src="github_assets/imgs/favorites_screen.png" alt="Movie list screen" width=250 height=450 />
+<img src="github_assets/imgs/splash_screen.png" alt="Movie list screen" width=250 height=450 />  <img src="github_assets/imgs/popular_movies_screen.png" alt="Movie list screen" width=250 height=450 />  <img src="github_assets/imgs/top_rated_movies_screen.png" alt="Movie list screen" width=250 height=450 />  
+<img src="github_assets/imgs/example_detail_screen.png" alt="Movie list screen" width=250 height=450 /> <img src="github_assets/imgs/favorites_screen.png" alt="Movie list screen" width=250 height=450 />
 
 ## Installation
 Clone this repository and import into **Android Studio**
