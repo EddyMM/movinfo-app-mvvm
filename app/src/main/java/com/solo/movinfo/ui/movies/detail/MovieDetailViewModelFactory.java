@@ -10,10 +10,10 @@ import javax.inject.Inject;
 
 public class MovieDetailViewModelFactory extends ViewModelProvider.NewInstanceFactory {
 
-    private String mMovieId;
+    private int mMovieId;
     private Context mContext;
 
-    public MovieDetailViewModelFactory(String id, Context context) {
+    public MovieDetailViewModelFactory(int id, Context context) {
         mMovieId = id;
         mContext = context;
     }

@@ -3,12 +3,17 @@ package com.solo.movinfo.ui.movies.list;
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
+import android.arch.paging.DataSource;
 import android.arch.paging.LivePagedListBuilder;
 import android.arch.paging.PagedList;
 import android.support.annotation.NonNull;
 
 import com.solo.movinfo.MovinfoApplication;
-import com.solo.movinfo.data.datasources.MoviesListDataSourceFactory;
+import com.solo.movinfo.data.DataManager;
+import com.solo.movinfo.data.datasources.base.PagedMoviesDataSource;
+import com.solo.movinfo.data.datasources.popularmovies.PopularMoviesDataSourceFactory;
+import com.solo.movinfo.data.datasources.topratedmovies.TopRatedMoviesDataSourceFactory;
+import com.solo.movinfo.data.db.MoviesDatabase;
 import com.solo.movinfo.data.model.Movie;
 import com.solo.movinfo.di.component.MoviesSubComponent;
 import com.solo.movinfo.di.module.MoviesListModule;
@@ -21,9 +26,17 @@ import timber.log.Timber;
 
 public class MoviesListViewModel extends AndroidViewModel {
     @Inject
-    MoviesListDataSourceFactory mMoviesListDataSourceFactory;
+    DataManager mDataManager;
 
-    private LiveData<PagedList<Movie>> mMoviesLiveData;
+    @Inject
+    MoviesDatabase mMoviesDatabase;
+
+    private PopularMoviesDataSourceFactory mPopularMoviesDataSourceFactory;
+    private TopRatedMoviesDataSourceFactory mTopRatedMoviesDataSourceFactory;
+
+    private LiveData<PagedList<Movie>> mPopularMoviesLiveData;
+    private LiveData<PagedList<Movie>> mTopRatedMoviesLiveData;
+    private LiveData<PagedList<Movie>> mFavoriteMoviesLiveData;
 
     public MoviesListViewModel(@NonNull Application application) {
         super(application);
@@ -35,12 +48,19 @@ public class MoviesListViewModel extends AndroidViewModel {
                 .build();
 
         moviesSubComponent.inject(this);
-
         fetchMoviesLiveData();
     }
 
-    LiveData<PagedList<Movie>> getMoviesLiveData() {
-        return mMoviesLiveData;
+    LiveData<PagedList<Movie>> getPopularMoviesLiveData() {
+        return mPopularMoviesLiveData;
+    }
+
+    LiveData<PagedList<Movie>> getTopRatedMoviesLiveData() {
+        return mTopRatedMoviesLiveData;
+    }
+
+    LiveData<PagedList<Movie>> getFavoriteMoviesLiveData() {
+        return mFavoriteMoviesLiveData;
     }
 
     private void fetchMoviesLiveData() {
@@ -51,15 +71,27 @@ public class MoviesListViewModel extends AndroidViewModel {
                 .setEnablePlaceholders(false)
                 .build();
 
-        mMoviesLiveData = new LivePagedListBuilder<>(mMoviesListDataSourceFactory, config)
-                .build();
+        mPopularMoviesDataSourceFactory = new PopularMoviesDataSourceFactory();
+        mPopularMoviesLiveData = new LivePagedListBuilder<>(mPopularMoviesDataSourceFactory,
+                config).build();
+
+        mTopRatedMoviesDataSourceFactory = new TopRatedMoviesDataSourceFactory();
+        mTopRatedMoviesLiveData = new LivePagedListBuilder<>(mTopRatedMoviesDataSourceFactory,
+                config).build();
+
+        DataSource.Factory<Integer, Movie> favoriteMoviesFactory =
+                mMoviesDatabase.favoriteMovieModel().getFavoriteMovies();
+        mFavoriteMoviesLiveData = new LivePagedListBuilder<>(favoriteMoviesFactory,
+                config).build();
+
     }
 
-    void refreshMoviesList() {
-        mMoviesListDataSourceFactory.getMoviesListDataSource().invalidate();
-    }
 
-    void retry() {
-        mMoviesListDataSourceFactory.getMoviesListDataSource().retry();
+    void continueLoadingAfterInterruption() {
+        if (mDataManager.getSortCriteria().equals(Constants.POPULARITY_PREFERENCE)) {
+            ((PagedMoviesDataSource) mPopularMoviesDataSourceFactory.dataSource()).retry();
+        } else if (mDataManager.getSortCriteria().equals(Constants.RATING_PREFERENCE)) {
+            ((PagedMoviesDataSource) mTopRatedMoviesDataSourceFactory.dataSource()).retry();
+        }
     }
 }

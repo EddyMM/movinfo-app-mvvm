@@ -1,4 +1,4 @@
-package com.solo.movinfo.data.datasources;
+package com.solo.movinfo.data.datasources.reviews;
 
 
 import android.arch.paging.PageKeyedDataSource;
@@ -20,11 +20,11 @@ import timber.log.Timber;
 
 public class MovieReviewsDataSource extends PageKeyedDataSource<Integer, Review> {
 
-    private String mMovieId;
+    private int mMovieId;
     private LoadParams<Integer> mParams;
     private LoadCallback<Integer, Review> mCallback;
 
-    MovieReviewsDataSource(String id) {
+    MovieReviewsDataSource(int id) {
         mMovieId = id;
     }
 

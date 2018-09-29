@@ -1,6 +1,8 @@
 package com.solo.movinfo.ui.movies.list;
 
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.arch.paging.PagedList;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -19,6 +21,7 @@ import android.widget.ProgressBar;
 import com.solo.movinfo.R;
 import com.solo.movinfo.base.InternetAwareFragment;
 import com.solo.movinfo.data.DataManager;
+import com.solo.movinfo.data.model.Movie;
 import com.solo.movinfo.utils.Constants;
 
 import java.util.List;
@@ -39,7 +42,10 @@ public class MoviesListFragment extends InternetAwareFragment implements
     private RecyclerView mMoviesRecyclerView;
     private ProgressBar mMoviesListProgressBar;
     private MoviesListAdapter mMoviesListAdapter;
+
     private MoviesListViewModel moviesListViewModel;
+
+    private MoviesListObserver mMoviesListObserver = new MoviesListObserver();
 
 
     @Nullable
@@ -89,13 +95,23 @@ public class MoviesListFragment extends InternetAwareFragment implements
             Timber.d("Sort by popularity");
             mDataManager.setSortCriteria(Constants.POPULARITY_PREFERENCE);
             return true;
-        } else if ((item.getItemId() == R.id.movies_list_rating_menu_item)) {
+        } else if (item.getItemId() == R.id.movies_list_rating_menu_item) {
             Timber.d("Sort by rating");
             mDataManager.setSortCriteria(Constants.RATING_PREFERENCE);
+            return true;
+        } else if (item.getItemId() == R.id.movies_list_favorites_menu_item) {
+            Timber.d("Sort by favorites");
+            mDataManager.setSortCriteria(Constants.FAVORITES_PREFERENCE);
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void removeAllObservers() {
+        moviesListViewModel.getFavoriteMoviesLiveData().removeObservers(this);
+        moviesListViewModel.getPopularMoviesLiveData().removeObservers(this);
+        moviesListViewModel.getTopRatedMoviesLiveData().removeObservers(this);
     }
 
     @Override
@@ -126,18 +142,18 @@ public class MoviesListFragment extends InternetAwareFragment implements
 
         moviesListViewModel = ViewModelProviders.of(this).get(
                 MoviesListViewModel.class);
-        moviesListViewModel.getMoviesLiveData().observe(this, movies -> {
-            if (movies != null) {
-                Timber.i("Adding movies list to adapter");
-                mMoviesListAdapter.submitList(movies);
-            } else {
-                Timber.i("No movies fetched");
-            }
 
-            hideProgressBar();
-            setMoviesListTitle();
-            showList();
-        });
+        attachMoviesListLiveData();
+    }
+
+    private void attachMoviesListLiveData() {
+        if (mDataManager.getSortCriteria().equals(Constants.RATING_PREFERENCE)) {
+            moviesListViewModel.getTopRatedMoviesLiveData().observe(this, mMoviesListObserver);
+        } else if (mDataManager.getSortCriteria().equals(Constants.FAVORITES_PREFERENCE)) {
+            moviesListViewModel.getFavoriteMoviesLiveData().observe(this, mMoviesListObserver);
+        } else {
+            moviesListViewModel.getPopularMoviesLiveData().observe(this, mMoviesListObserver);
+        }
     }
 
     /**
@@ -155,6 +171,8 @@ public class MoviesListFragment extends InternetAwareFragment implements
     private void setMoviesListTitle() {
         if (mDataManager.getSortCriteria().equals(Constants.RATING_PREFERENCE)) {
             requireActivity().setTitle(getString(R.string.top_rated_movies_title));
+        } else if (mDataManager.getSortCriteria().equals(Constants.FAVORITES_PREFERENCE)) {
+            requireActivity().setTitle(getString(R.string.favorite_movies_title));
         } else {
             requireActivity().setTitle(getString(R.string.popular_movies_title));
         }
@@ -177,16 +195,16 @@ public class MoviesListFragment extends InternetAwareFragment implements
     }
 
     private void refresh() {
+        removeAllObservers();
+
         hideList();
         showProgressBar();
 
-        moviesListViewModel.refreshMoviesList();
+        attachMoviesListLiveData();
     }
 
     @Override
-    protected void onInternetConnectivityOff() {
-
-    }
+    protected void onInternetConnectivityOff() {}
 
     /**
      * If part of the list was already loaded, it attempts to continue loading the rest
@@ -194,11 +212,28 @@ public class MoviesListFragment extends InternetAwareFragment implements
      */
     @Override
     protected void onInternetConnectivityOn() {
-        List currentMoviesList = moviesListViewModel.getMoviesLiveData().getValue();
+        List currentMoviesList = mMoviesListAdapter.getCurrentList();
         if (currentMoviesList != null && currentMoviesList.size() > 0) {
-            moviesListViewModel.retry();
+            Timber.d("Retrying movies list fetch");
+            moviesListViewModel.continueLoadingAfterInterruption();
         } else {
             refresh();
+        }
+    }
+
+    class MoviesListObserver implements Observer<PagedList<Movie>> {
+        @Override
+        public void onChanged(@Nullable PagedList<Movie> movies) {
+            if (movies != null) {
+                Timber.i("Adding movies list to adapter");
+                mMoviesListAdapter.submitList(movies);
+            } else {
+                Timber.i("No movies fetched");
+            }
+
+            hideProgressBar();
+            setMoviesListTitle();
+            showList();
         }
     }
 }

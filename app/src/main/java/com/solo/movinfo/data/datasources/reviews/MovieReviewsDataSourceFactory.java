@@ -1,4 +1,4 @@
-package com.solo.movinfo.data.datasources;
+package com.solo.movinfo.data.datasources.reviews;
 
 
 import android.arch.paging.DataSource;
@@ -7,11 +7,11 @@ import com.solo.movinfo.data.model.Review;
 
 public class MovieReviewsDataSourceFactory extends DataSource.Factory<Integer, Review> {
 
-    private String mMovieId;
+    private int mMovieId;
 
     private MovieReviewsDataSource mMovieReviewsDataSource;
 
-    public MovieReviewsDataSourceFactory(String id) {
+    public MovieReviewsDataSourceFactory(int id) {
         mMovieId = id;
     }
 

@@ -4,14 +4,18 @@ package com.solo.movinfo.ui.movies.detail;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
+import android.arch.paging.DataSource;
 import android.arch.paging.LivePagedListBuilder;
 import android.arch.paging.PagedList;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
+import com.solo.movinfo.AppExecutors;
 import com.solo.movinfo.MovinfoApplication;
 import com.solo.movinfo.data.DataManager;
-import com.solo.movinfo.data.datasources.MovieReviewsDataSourceFactory;
+import com.solo.movinfo.data.db.MoviesDatabase;
+import com.solo.movinfo.data.datasources.reviews.MovieReviewsDataSourceFactory;
+import com.solo.movinfo.data.model.Movie;
 import com.solo.movinfo.data.model.Review;
 import com.solo.movinfo.data.model.Video;
 import com.solo.movinfo.data.network.responsemodels.VideosResponse;
@@ -31,25 +35,34 @@ public class MoviesDetailViewModel extends ViewModel {
 
     @Inject
     DataManager mDataManager;
-    private String mMovieId;
+    private int mMovieId;
 
-    private MutableLiveData<List<Video>> videosLiveData = new MutableLiveData<>();
-    private LiveData<PagedList<Review>> reviewsLiveData;
+    private MutableLiveData<List<Video>> mVideosLiveData = new MutableLiveData<>();
+    private LiveData<PagedList<Review>> mReviewsLiveData;
+    private LiveData<Movie> mCurrentFavoriteMovieLiveData;
 
     private MovieReviewsDataSourceFactory mMovieReviewsDataSourceFactory;
 
-    MoviesDetailViewModel(String id, Context context) {
+    MoviesDetailViewModel(int id, Context context) {
         mMovieId = id;
 
-        MoviesSubComponent moviesSubComponent = ((MovinfoApplication) context.getApplicationContext())
-                .getApplicationComponent()
-                .moviesSubComponentBuilder()
-                .build();
+        MoviesSubComponent moviesSubComponent =
+                ((MovinfoApplication) context.getApplicationContext())
+                        .getApplicationComponent()
+                        .moviesSubComponentBuilder()
+                        .build();
         moviesSubComponent.inject(this);
 
 
         fetchReviews();
         fetchVideos();
+        fetchFavoriteMovie(context);
+    }
+
+    private void fetchFavoriteMovie(Context context) {
+        mCurrentFavoriteMovieLiveData = MoviesDatabase.getInstance(context)
+                .favoriteMovieModel()
+                .getFavoriteMovieById(mMovieId);
     }
 
     private void fetchReviews() {
@@ -62,7 +75,7 @@ public class MoviesDetailViewModel extends ViewModel {
         mMovieReviewsDataSourceFactory =
                 new MovieReviewsDataSourceFactory(mMovieId);
 
-        reviewsLiveData = new LivePagedListBuilder<>(mMovieReviewsDataSourceFactory, config)
+        mReviewsLiveData = new LivePagedListBuilder<>(mMovieReviewsDataSourceFactory, config)
                 .build();
     }
 
@@ -80,7 +93,7 @@ public class MoviesDetailViewModel extends ViewModel {
 
                 if (videosResponse != null) {
                     List<Video> videos = videosResponse.getVideos();
-                    videosLiveData.postValue(videos);
+                    mVideosLiveData.postValue(videos);
                 }
             }
 
@@ -90,15 +103,19 @@ public class MoviesDetailViewModel extends ViewModel {
             }
         };
 
-        mDataManager.getVideos(mMovieId, videosResponseCallback);
+        mDataManager.loadVideos(mMovieId, videosResponseCallback);
     }
 
     LiveData<List<Video>> getVideosLiveData() {
-        return videosLiveData;
+        return mVideosLiveData;
     }
 
     LiveData<PagedList<Review>> getReviewsLiveData() {
-        return reviewsLiveData;
+        return mReviewsLiveData;
+    }
+
+    LiveData<Movie> getCurrentFavoriteMovieLiveData() {
+        return mCurrentFavoriteMovieLiveData;
     }
 
     void retry() {
@@ -106,6 +123,26 @@ public class MoviesDetailViewModel extends ViewModel {
     }
 
     void refreshReviewsList() {
-        mMovieReviewsDataSourceFactory.getMovieReviewsDataSource().invalidate();
+        DataSource reviewsDataSource = mMovieReviewsDataSourceFactory.getMovieReviewsDataSource();
+        if (reviewsDataSource != null) {
+            reviewsDataSource.invalidate();
+        }
+    }
+
+
+    void addOrRemoveFromFavorites(Context context, Movie movie) {
+        if (mCurrentFavoriteMovieLiveData.getValue() == null) {
+            AppExecutors.getInstance().diskIO().execute(() ->
+                    MoviesDatabase.getInstance(context)
+                            .favoriteMovieModel()
+                            .addFavoriteMovie(movie)
+            );
+        } else {
+            AppExecutors.getInstance().diskIO().execute(() ->
+                    MoviesDatabase.getInstance(context)
+                            .favoriteMovieModel()
+                            .removeFavoriteMovie(movie)
+            );
+        }
     }
 }

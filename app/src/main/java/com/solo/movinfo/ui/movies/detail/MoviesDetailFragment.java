@@ -24,9 +24,11 @@ import android.widget.ProgressBar;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.solo.movinfo.AppExecutors;
 import com.solo.movinfo.BuildConfig;
 import com.solo.movinfo.R;
 import com.solo.movinfo.base.InternetAwareFragment;
+import com.solo.movinfo.data.db.MoviesDatabase;
 import com.solo.movinfo.data.model.Movie;
 import com.solo.movinfo.data.model.Review;
 import com.solo.movinfo.data.model.Video;
@@ -52,6 +54,7 @@ public class MoviesDetailFragment extends InternetAwareFragment {
     private VideosAdapter mVideosAdapter;
     private TextView mReviewsLabelTextView;
     private TextView mVideosLabelTextView;
+    private ImageView mImageView;
 
     private ProgressBar mMovieDetailsProgressBar;
 
@@ -95,6 +98,17 @@ public class MoviesDetailFragment extends InternetAwareFragment {
 
             showProgressBar();
 
+            LiveData<Movie> favoriteMovieLiveData =
+                    mMoviesDetailViewModel.getCurrentFavoriteMovieLiveData();
+            favoriteMovieLiveData.observe(this, (movie) -> {
+                Timber.d("isInFavorite movie: %s", movie);
+                if (movie != null) {
+                    setFavoriteOn();
+                } else {
+                    setFavoriteOff();
+                }
+            });
+
             reviewsLiveData.observe(this, (reviews) -> {
                 hideProgressBar();
 
@@ -110,7 +124,7 @@ public class MoviesDetailFragment extends InternetAwareFragment {
                 if (videos != null && videos.size() > 0) {
                     mVideosLabelTextView.setVisibility(View.VISIBLE);
                     mVideosAdapter.submitVideos(videos);
-                    Timber.d("Videos: %s" , videos);
+                    Timber.d("Videos: %s", videos);
                 }
             });
         }
@@ -184,9 +198,17 @@ public class MoviesDetailFragment extends InternetAwareFragment {
                 videosRecyclerView.setNestedScrollingEnabled(false);
             }
 
+            // Favorite feature
+            mImageView = v.findViewById(R.id.favoriteImageView);
+            mImageView.setOnClickListener((view) -> addOrRemoveFromFavorites());
+
         } else {
             Log.w(TAG, "Movie in Details screen is null");
         }
+    }
+
+    private void addOrRemoveFromFavorites() {
+        mMoviesDetailViewModel.addOrRemoveFromFavorites(requireContext(), mMovie);
     }
 
     private void hideProgressBar() {
@@ -195,6 +217,18 @@ public class MoviesDetailFragment extends InternetAwareFragment {
 
     private void showProgressBar() {
         mMovieDetailsProgressBar.setVisibility(View.VISIBLE);
+    }
+
+    private void setFavoriteOn() {
+        addFavorite();
+        mImageView.setImageDrawable(
+                getResources().getDrawable(R.drawable.ic_star_black_24dp));
+    }
+
+    private void setFavoriteOff() {
+        removeFavorite();
+        mImageView.setImageDrawable(
+                getResources().getDrawable(R.drawable.ic_star_border_black_24dp));
     }
 
     @Override
@@ -223,5 +257,19 @@ public class MoviesDetailFragment extends InternetAwareFragment {
         } else {
             mMoviesDetailViewModel.refreshReviewsList();
         }
+    }
+
+    void addFavorite() {
+        AppExecutors.getInstance().diskIO().execute(() ->
+                MoviesDatabase.getInstance(requireContext())
+                        .favoriteMovieModel()
+                        .addFavoriteMovie(mMovie));
+    }
+
+    void removeFavorite() {
+        AppExecutors.getInstance().diskIO().execute(() ->
+                MoviesDatabase.getInstance(requireContext())
+                        .favoriteMovieModel()
+                        .removeFavoriteMovie(mMovie));
     }
 }

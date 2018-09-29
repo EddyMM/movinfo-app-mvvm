@@ -1,15 +1,10 @@
 package com.solo.movinfo.data;
 
 
-import android.arch.lifecycle.LiveData;
-
-import com.solo.movinfo.data.model.Video;
 import com.solo.movinfo.data.network.MovieDbApi;
 import com.solo.movinfo.data.network.MovieDbService;
 import com.solo.movinfo.data.network.responsemodels.VideosResponse;
 import com.solo.movinfo.data.preferences.PreferencesHelper;
-
-import java.util.List;
 
 import javax.inject.Inject;
 
@@ -46,13 +41,11 @@ public class AppDataManager implements DataManager {
     }
 
     @Override
-    public LiveData<List<Video>> getVideos(String movieId,
+    public void loadVideos(int movieId,
             Callback<VideosResponse> videosCallback) {
         MovieDbService movieDbService = MovieDbApi.getInstance();
 
         Call<VideosResponse> videosResponseCall = movieDbService.getVideos(movieId);
         videosResponseCall.enqueue(videosCallback);
-
-        return null;
     }
 }

@@ -17,8 +17,8 @@ public interface MovieDbService {
     Call<MoviesResponse> getTopRatedMovies(@Query("page") int page);
 
     @GET("movie/{id}/reviews")
-    Call<ReviewsResponse> getReviews(@Path("id") String id, @Query("page") int page);
+    Call<ReviewsResponse> getReviews(@Path("id") int id, @Query("page") int page);
 
     @GET("movie/{id}/videos")
-    Call<VideosResponse> getVideos(@Path("id") String id);
+    Call<VideosResponse> getVideos(@Path("id") int id);
 }
